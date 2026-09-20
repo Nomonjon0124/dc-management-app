@@ -133,6 +133,22 @@ class Routes implements Coordinate {
     path: '/meetings/filter',
   );
 
+  /// API'siz Figma preview: `?mode=create|details`.
+  static const meetingUiPreview = Routes._(
+    name: 'meeting_ui_preview',
+    path: '/meetings/ui-preview',
+  );
+
+  static const meetingCallPreview = Routes._(
+    name: 'meeting_call_preview',
+    path: '/meetings/call-preview',
+  );
+
+  static const meetingRoom = Routes._(
+    name: 'meeting_room',
+    path: '/meetings/:id/room',
+  );
+
   /// Yig'ilish tafsilotlari (kartaga bosilganda, faqat o'qish).
   static const meetingDetail = Routes._(
     name: 'meeting_detail',

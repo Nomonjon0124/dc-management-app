@@ -30,6 +30,7 @@ class Meeting extends Equatable {
     required this.isCompleted,
     required this.reason,
     required this.attended,
+    this.requiresApproval,
   });
 
   final int id;
@@ -81,6 +82,10 @@ class Meeting extends Equatable {
   /// (qatnashmadi) / `null` (noma‘lum) — kartadagi nishonni tanlaydi.
   final bool? attended;
 
+  /// Tashkilotchi tasdig‘i talab qilinadimi. Eski response’larda yo‘q bo‘lishi
+  /// mumkin, shu sababli nullable saqlanadi.
+  final bool? requiresApproval;
+
   @override
   List<Object?> get props => [
     id,
@@ -104,5 +109,6 @@ class Meeting extends Equatable {
     isCompleted,
     reason,
     attended,
+    requiresApproval,
   ];
 }

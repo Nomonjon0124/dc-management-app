@@ -1093,6 +1093,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get meetingCreateParticipantsTitle => 'Add participants';
 
   @override
+  String get meetingPreviewDetailsTitle => 'Meeting details';
+
+  @override
+  String get meetingPreviewApprovalTitle => 'Approval required';
+
+  @override
+  String get meetingPreviewApprovalDescription =>
+      'When enabled, the creator, project manager or admin must approve each participant.';
+
+  @override
+  String get meetingPreviewActive => 'In progress';
+
+  @override
+  String get meetingPreviewJoin => 'Join meeting';
+
+  @override
+  String get meetingPreviewSave => 'Save';
+
+  @override
+  String get meetingPreviewProject => 'Marketing Platform';
+
+  @override
+  String get meetingPreviewProjectSecond => 'Digital Control';
+
+  @override
+  String get meetingPreviewName => 'Test meeting';
+
+  @override
+  String get meetingPreviewPenalty => '20';
+
+  @override
+  String get meetingPreviewDescription =>
+      'Add a new “Reports” section to the CRM system. Admin must be able to see all data.';
+
+  @override
+  String get meetingPreviewParticipantOne => 'Ali Valiyev';
+
+  @override
+  String get meetingPreviewParticipantTwo => 'Madina Karimova';
+
+  @override
   String get meetingCreateCompleted => 'Completed?';
 
   @override
@@ -1580,4 +1621,287 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get expenseRequestCreateSuccessMessage =>
       'Your expense request was submitted successfully.';
+
+  @override
+  String get meetingCallJoinTitle => 'Join meeting';
+
+  @override
+  String get meetingCallWaitingTitle => 'Waiting for approval';
+
+  @override
+  String get meetingCallCameraOff => 'Camera is off';
+
+  @override
+  String get meetingCallMicrophone => 'Microphone';
+
+  @override
+  String get meetingCallCamera => 'Camera';
+
+  @override
+  String get meetingCallSampleTitle => 'Weekly project meeting';
+
+  @override
+  String get meetingCallCodeCopied => 'Meeting code copied';
+
+  @override
+  String get meetingCallJoin => 'Join';
+
+  @override
+  String get meetingCallApprovalHint =>
+      'You will enter when the organizer approves you.';
+
+  @override
+  String get meetingCallRequestSent => 'Request sent';
+
+  @override
+  String get meetingCallWaitingHint =>
+      'You will enter automatically when the organizer approves you.';
+
+  @override
+  String get meetingCallCancel => 'Cancel';
+
+  @override
+  String get meetingCallPreviewApprove => 'Demo: approve request';
+
+  @override
+  String get meetingCallName => 'Meeting name';
+
+  @override
+  String get meetingCallEnd => 'End meeting';
+
+  @override
+  String get meetingCallLeave => 'Leave';
+
+  @override
+  String get meetingCallYou => 'You';
+
+  @override
+  String get meetingCallSelfName => 'Safarali Turotov (you)';
+
+  @override
+  String get meetingCallDilnoza => 'Dilnoza Sattorova';
+
+  @override
+  String get meetingCallBekzod => 'Bekzod Qodirov';
+
+  @override
+  String get meetingCallRaisedNotice => 'Dilnoza Sattorova raised a hand';
+
+  @override
+  String get meetingCallWantsToJoin => 'wants to join the meeting';
+
+  @override
+  String get meetingCallReject => 'Reject';
+
+  @override
+  String get meetingCallAllow => 'Allow';
+
+  @override
+  String get meetingCallRaiseHand => 'Raise hand';
+
+  @override
+  String get meetingCallMore => 'More';
+
+  @override
+  String get meetingCallParticipantsCount => 'Participants (3)';
+
+  @override
+  String get meetingCallParticipants => 'Participants';
+
+  @override
+  String get meetingCallChat => 'Chat';
+
+  @override
+  String get meetingCallClose => 'Close';
+
+  @override
+  String get meetingCallSearch => 'Search';
+
+  @override
+  String get meetingCallInMeeting => 'IN THE MEETING';
+
+  @override
+  String get meetingCallOrganizer => 'Organizer';
+
+  @override
+  String get meetingCallParticipant => 'Participant';
+
+  @override
+  String get meetingCallChatNote =>
+      'Messages are deleted when the meeting ends.';
+
+  @override
+  String get meetingCallSampleMessageOne => 'Please share the report on screen';
+
+  @override
+  String get meetingCallSampleMessageTwo => 'One minute, I\'ll share it';
+
+  @override
+  String get meetingCallMessageHint => 'Write a message';
+
+  @override
+  String get meetingCallShareScreen => 'Share screen';
+
+  @override
+  String get meetingCallStickers => 'Stickers';
+
+  @override
+  String get meetingCallMicAndSpeaker => 'Microphone and speaker';
+
+  @override
+  String get meetingCallMicrophoneSection => 'MICROPHONE';
+
+  @override
+  String get meetingCallSpeakerSection => 'SPEAKER';
+
+  @override
+  String get meetingCallIphoneMicrophone => 'iPhone microphone';
+
+  @override
+  String get meetingCallAirpods => 'AirPods Pro';
+
+  @override
+  String get meetingCallWiredHeadset => 'Wired headset';
+
+  @override
+  String get meetingCallIphoneSpeaker => 'iPhone speaker';
+
+  @override
+  String get meetingCallExitQuestion => 'Leave the meeting?';
+
+  @override
+  String get meetingCallExitHint =>
+      'The link will remain active, so you can join again at any time.';
+
+  @override
+  String get meetingCallEndForEveryone => 'End the meeting for everyone';
+
+  @override
+  String get meetingCallMeetingEndedTitle => 'You left the meeting';
+
+  @override
+  String get meetingCallMeetingEndedHint =>
+      'The link is still active, so you can return at any time.';
+
+  @override
+  String get meetingCallRejoin => 'Rejoin';
+
+  @override
+  String get meetingCallHome => 'Home page';
+
+  @override
+  String get meetingCallDetails => 'Meeting details';
+
+  @override
+  String get meetingCallDetailsHint => 'Link and official information';
+
+  @override
+  String get meetingCallJoinDetails => 'JOINING INFORMATION';
+
+  @override
+  String get meetingCallMeetingLink => 'Meeting link';
+
+  @override
+  String get meetingCallMeetingParams => 'MEETING PARAMETERS';
+
+  @override
+  String get meetingCallOfficialUid => 'Official UID';
+
+  @override
+  String get meetingCallMeetingTopic => 'Meeting topic';
+
+  @override
+  String get meetingCallStartTime => 'Start time';
+
+  @override
+  String get meetingCallSecurityAccess => 'Security and access';
+
+  @override
+  String get meetingCallDirectJoin => 'Direct join';
+
+  @override
+  String get meetingCallMeetingUid => 'MT-0005';
+
+  @override
+  String get meetingCallTopicValue => 'Review Figma';
+
+  @override
+  String get meetingCallStartValue => '14.09.2026 15:40, 30 minutes';
+
+  @override
+  String get meetingCallYouAreSharing => 'You are sharing your screen';
+
+  @override
+  String get meetingCallStopSharing => 'Stop sharing';
+
+  @override
+  String get meetingCallChooseAnotherScreen => 'Choose another screen';
+
+  @override
+  String get meetingCallChatEmpty => 'No messages yet';
+
+  @override
+  String get meetingCallChatEmptyHint => 'You can write during the meeting';
+
+  @override
+  String get meetingCallCameraAndBackground => 'Camera and background';
+
+  @override
+  String get meetingCallCameraSection => 'CAMERA';
+
+  @override
+  String get meetingCallFrontCamera => 'Front camera';
+
+  @override
+  String get meetingCallRearCamera => 'Rear camera';
+
+  @override
+  String get meetingCallBackgroundSection => 'BACKGROUND';
+
+  @override
+  String get meetingCallBlurBackground => 'Blur background';
+
+  @override
+  String get meetingCallNoBackground => 'No background';
+
+  @override
+  String get meetingCallOfficeBackgrounds => 'Office backgrounds';
+
+  @override
+  String get meetingCallSearchParticipant => 'Search participant';
+
+  @override
+  String get meetingCallMicRequestTitle => 'Turn on your microphone?';
+
+  @override
+  String get meetingCallCameraRequestTitle => 'Turn on your camera?';
+
+  @override
+  String get meetingCallRequester => 'Safarali Turotov';
+
+  @override
+  String get meetingCallOrganizerRequested => 'Organizer just asked';
+
+  @override
+  String get meetingCallMicRequestHint =>
+      'The choice is yours. If you are not ready, you can turn it on later.';
+
+  @override
+  String get meetingCallCameraRequestHint =>
+      'The choice is yours. If you prefer, you can keep your camera off.';
+
+  @override
+  String get meetingCallNotNow => 'Not now';
+
+  @override
+  String get meetingCallEnableMicrophone => 'Turn on microphone';
+
+  @override
+  String get meetingCallEnableCamera => 'Turn on camera';
+
+  @override
+  String get meetingCallStickersTitle => 'Stickers';
+
+  @override
+  String get meetingCallSendMessage => 'Send message';
 }

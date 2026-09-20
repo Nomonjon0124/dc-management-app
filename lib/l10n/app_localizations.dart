@@ -2216,6 +2216,84 @@ abstract class AppLocalizations {
   /// **'Qatnashchilarni qo‘shish'**
   String get meetingCreateParticipantsTitle;
 
+  /// No description provided for @meetingPreviewDetailsTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yig‘ilish ma’lumotlari'**
+  String get meetingPreviewDetailsTitle;
+
+  /// No description provided for @meetingPreviewApprovalTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tasdiqlash talabi'**
+  String get meetingPreviewApprovalTitle;
+
+  /// No description provided for @meetingPreviewApprovalDescription.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yoqilsa, har bir ishtirokchini yaratuvchi, loyiha menejeri yoki admin tasdiqlaydi.'**
+  String get meetingPreviewApprovalDescription;
+
+  /// No description provided for @meetingPreviewActive.
+  ///
+  /// In uz, this message translates to:
+  /// **'Davom etmoqda'**
+  String get meetingPreviewActive;
+
+  /// No description provided for @meetingPreviewJoin.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yig‘ilishga kirish'**
+  String get meetingPreviewJoin;
+
+  /// No description provided for @meetingPreviewSave.
+  ///
+  /// In uz, this message translates to:
+  /// **'Saqlash'**
+  String get meetingPreviewSave;
+
+  /// No description provided for @meetingPreviewProject.
+  ///
+  /// In uz, this message translates to:
+  /// **'Marketing Platform'**
+  String get meetingPreviewProject;
+
+  /// No description provided for @meetingPreviewProjectSecond.
+  ///
+  /// In uz, this message translates to:
+  /// **'Raqamli Nazorat'**
+  String get meetingPreviewProjectSecond;
+
+  /// No description provided for @meetingPreviewName.
+  ///
+  /// In uz, this message translates to:
+  /// **'Test qilish'**
+  String get meetingPreviewName;
+
+  /// No description provided for @meetingPreviewPenalty.
+  ///
+  /// In uz, this message translates to:
+  /// **'20'**
+  String get meetingPreviewPenalty;
+
+  /// No description provided for @meetingPreviewDescription.
+  ///
+  /// In uz, this message translates to:
+  /// **'CRM tizimida yangi “Hisobotlar” bo‘limini qo‘shish. Admin barcha ma’lumotlarni ko‘ra olishi kerak.'**
+  String get meetingPreviewDescription;
+
+  /// No description provided for @meetingPreviewParticipantOne.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ali Valiyev'**
+  String get meetingPreviewParticipantOne;
+
+  /// No description provided for @meetingPreviewParticipantTwo.
+  ///
+  /// In uz, this message translates to:
+  /// **'Madina Karimova'**
+  String get meetingPreviewParticipantTwo;
+
   /// No description provided for @meetingCreateCompleted.
   ///
   /// In uz, this message translates to:
@@ -3163,6 +3241,558 @@ abstract class AppLocalizations {
   /// In uz, this message translates to:
   /// **'Xarajat so\'rovingiz muvaffaqiyatli yuborildi.'**
   String get expenseRequestCreateSuccessMessage;
+
+  /// No description provided for @meetingCallJoinTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Uchrashuvga qo‘shilish'**
+  String get meetingCallJoinTitle;
+
+  /// No description provided for @meetingCallWaitingTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ruxsat kutilmoqda'**
+  String get meetingCallWaitingTitle;
+
+  /// No description provided for @meetingCallCameraOff.
+  ///
+  /// In uz, this message translates to:
+  /// **'Kamera o‘chirilgan'**
+  String get meetingCallCameraOff;
+
+  /// No description provided for @meetingCallMicrophone.
+  ///
+  /// In uz, this message translates to:
+  /// **'Mikrofon'**
+  String get meetingCallMicrophone;
+
+  /// No description provided for @meetingCallCamera.
+  ///
+  /// In uz, this message translates to:
+  /// **'Kamera'**
+  String get meetingCallCamera;
+
+  /// No description provided for @meetingCallSampleTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Haftalik loyiha yig‘ilishi'**
+  String get meetingCallSampleTitle;
+
+  /// No description provided for @meetingCallCodeCopied.
+  ///
+  /// In uz, this message translates to:
+  /// **'Uchrashuv kodi nusxalandi'**
+  String get meetingCallCodeCopied;
+
+  /// No description provided for @meetingCallJoin.
+  ///
+  /// In uz, this message translates to:
+  /// **'Qo‘shilish'**
+  String get meetingCallJoin;
+
+  /// No description provided for @meetingCallApprovalHint.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tashkilotchi ruxsat bergach uchrashuvga kirasiz.'**
+  String get meetingCallApprovalHint;
+
+  /// No description provided for @meetingCallRequestSent.
+  ///
+  /// In uz, this message translates to:
+  /// **'So‘rov yuborildi'**
+  String get meetingCallRequestSent;
+
+  /// No description provided for @meetingCallWaitingHint.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tashkilotchi ruxsat bergach avtomatik kirasiz.'**
+  String get meetingCallWaitingHint;
+
+  /// No description provided for @meetingCallCancel.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bekor qilish'**
+  String get meetingCallCancel;
+
+  /// No description provided for @meetingCallPreviewApprove.
+  ///
+  /// In uz, this message translates to:
+  /// **'Demo: ruxsat berildi'**
+  String get meetingCallPreviewApprove;
+
+  /// No description provided for @meetingCallName.
+  ///
+  /// In uz, this message translates to:
+  /// **'Meet nomi'**
+  String get meetingCallName;
+
+  /// No description provided for @meetingCallEnd.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yig‘ilishni tugatish'**
+  String get meetingCallEnd;
+
+  /// No description provided for @meetingCallLeave.
+  ///
+  /// In uz, this message translates to:
+  /// **'Chiqish'**
+  String get meetingCallLeave;
+
+  /// No description provided for @meetingCallYou.
+  ///
+  /// In uz, this message translates to:
+  /// **'Siz'**
+  String get meetingCallYou;
+
+  /// No description provided for @meetingCallSelfName.
+  ///
+  /// In uz, this message translates to:
+  /// **'Safarali Turotov (siz)'**
+  String get meetingCallSelfName;
+
+  /// No description provided for @meetingCallDilnoza.
+  ///
+  /// In uz, this message translates to:
+  /// **'Dilnoza Sattorova'**
+  String get meetingCallDilnoza;
+
+  /// No description provided for @meetingCallBekzod.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bekzod Qodirov'**
+  String get meetingCallBekzod;
+
+  /// No description provided for @meetingCallRaisedNotice.
+  ///
+  /// In uz, this message translates to:
+  /// **'Dilnoza Sattorova qo‘l ko‘tardi'**
+  String get meetingCallRaisedNotice;
+
+  /// No description provided for @meetingCallWantsToJoin.
+  ///
+  /// In uz, this message translates to:
+  /// **'uchrashuvga qo‘shilmoqchi'**
+  String get meetingCallWantsToJoin;
+
+  /// No description provided for @meetingCallReject.
+  ///
+  /// In uz, this message translates to:
+  /// **'Rad etish'**
+  String get meetingCallReject;
+
+  /// No description provided for @meetingCallAllow.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ruxsat berish'**
+  String get meetingCallAllow;
+
+  /// No description provided for @meetingCallRaiseHand.
+  ///
+  /// In uz, this message translates to:
+  /// **'Qo‘l ko‘tarish'**
+  String get meetingCallRaiseHand;
+
+  /// No description provided for @meetingCallMore.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yana'**
+  String get meetingCallMore;
+
+  /// No description provided for @meetingCallParticipantsCount.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ishtirokchilar (3)'**
+  String get meetingCallParticipantsCount;
+
+  /// No description provided for @meetingCallParticipants.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ishtirokchilar'**
+  String get meetingCallParticipants;
+
+  /// No description provided for @meetingCallChat.
+  ///
+  /// In uz, this message translates to:
+  /// **'Chat'**
+  String get meetingCallChat;
+
+  /// No description provided for @meetingCallClose.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yopish'**
+  String get meetingCallClose;
+
+  /// No description provided for @meetingCallSearch.
+  ///
+  /// In uz, this message translates to:
+  /// **'Qidirish'**
+  String get meetingCallSearch;
+
+  /// No description provided for @meetingCallInMeeting.
+  ///
+  /// In uz, this message translates to:
+  /// **'UCHRASHUVDA'**
+  String get meetingCallInMeeting;
+
+  /// No description provided for @meetingCallOrganizer.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tashkilotchi'**
+  String get meetingCallOrganizer;
+
+  /// No description provided for @meetingCallParticipant.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ishtirokchi'**
+  String get meetingCallParticipant;
+
+  /// No description provided for @meetingCallChatNote.
+  ///
+  /// In uz, this message translates to:
+  /// **'Xabarlar uchrashuv tugagach o‘chiriladi.'**
+  String get meetingCallChatNote;
+
+  /// No description provided for @meetingCallSampleMessageOne.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hisobotni ekranga chiqaring, iltimos'**
+  String get meetingCallSampleMessageOne;
+
+  /// No description provided for @meetingCallSampleMessageTwo.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bir daqiqa, ulashaman'**
+  String get meetingCallSampleMessageTwo;
+
+  /// No description provided for @meetingCallMessageHint.
+  ///
+  /// In uz, this message translates to:
+  /// **'Xabar yozing'**
+  String get meetingCallMessageHint;
+
+  /// No description provided for @meetingCallShareScreen.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ekranni ulashish'**
+  String get meetingCallShareScreen;
+
+  /// No description provided for @meetingCallStickers.
+  ///
+  /// In uz, this message translates to:
+  /// **'Stikerlar'**
+  String get meetingCallStickers;
+
+  /// No description provided for @meetingCallMicAndSpeaker.
+  ///
+  /// In uz, this message translates to:
+  /// **'Mikrofon va dinamik'**
+  String get meetingCallMicAndSpeaker;
+
+  /// No description provided for @meetingCallMicrophoneSection.
+  ///
+  /// In uz, this message translates to:
+  /// **'MIKROFON'**
+  String get meetingCallMicrophoneSection;
+
+  /// No description provided for @meetingCallSpeakerSection.
+  ///
+  /// In uz, this message translates to:
+  /// **'DINAMIK'**
+  String get meetingCallSpeakerSection;
+
+  /// No description provided for @meetingCallIphoneMicrophone.
+  ///
+  /// In uz, this message translates to:
+  /// **'iPhone mikrofoni'**
+  String get meetingCallIphoneMicrophone;
+
+  /// No description provided for @meetingCallAirpods.
+  ///
+  /// In uz, this message translates to:
+  /// **'AirPods Pro'**
+  String get meetingCallAirpods;
+
+  /// No description provided for @meetingCallWiredHeadset.
+  ///
+  /// In uz, this message translates to:
+  /// **'Simli quloqchin'**
+  String get meetingCallWiredHeadset;
+
+  /// No description provided for @meetingCallIphoneSpeaker.
+  ///
+  /// In uz, this message translates to:
+  /// **'iPhone dinamigi'**
+  String get meetingCallIphoneSpeaker;
+
+  /// No description provided for @meetingCallExitQuestion.
+  ///
+  /// In uz, this message translates to:
+  /// **'Uchrashuvdan chiqasizmi?'**
+  String get meetingCallExitQuestion;
+
+  /// No description provided for @meetingCallExitHint.
+  ///
+  /// In uz, this message translates to:
+  /// **'Havola amal qiladi, istalgan vaqtda qayta qo‘shilishingiz mumkin.'**
+  String get meetingCallExitHint;
+
+  /// No description provided for @meetingCallEndForEveryone.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yig‘ilishni hamma uchun tugatish'**
+  String get meetingCallEndForEveryone;
+
+  /// No description provided for @meetingCallMeetingEndedTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Siz uchrashuvdan chiqdingiz'**
+  String get meetingCallMeetingEndedTitle;
+
+  /// No description provided for @meetingCallMeetingEndedHint.
+  ///
+  /// In uz, this message translates to:
+  /// **'Havola hali ham amal qiladi, istalgan vaqtda qaytishingiz mumkin.'**
+  String get meetingCallMeetingEndedHint;
+
+  /// No description provided for @meetingCallRejoin.
+  ///
+  /// In uz, this message translates to:
+  /// **'Qayta qo‘shilish'**
+  String get meetingCallRejoin;
+
+  /// No description provided for @meetingCallHome.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bosh sahifaga'**
+  String get meetingCallHome;
+
+  /// No description provided for @meetingCallDetails.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yig‘ilish tafsilotlari'**
+  String get meetingCallDetails;
+
+  /// No description provided for @meetingCallDetailsHint.
+  ///
+  /// In uz, this message translates to:
+  /// **'Havola va rasmiy ma’lumotlar'**
+  String get meetingCallDetailsHint;
+
+  /// No description provided for @meetingCallJoinDetails.
+  ///
+  /// In uz, this message translates to:
+  /// **'QO‘SHILISH MA’LUMOTLARI'**
+  String get meetingCallJoinDetails;
+
+  /// No description provided for @meetingCallMeetingLink.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yig‘ilish havolasi'**
+  String get meetingCallMeetingLink;
+
+  /// No description provided for @meetingCallMeetingParams.
+  ///
+  /// In uz, this message translates to:
+  /// **'YIG‘ILISH PARAMETRLARI'**
+  String get meetingCallMeetingParams;
+
+  /// No description provided for @meetingCallOfficialUid.
+  ///
+  /// In uz, this message translates to:
+  /// **'Rasmiy UID'**
+  String get meetingCallOfficialUid;
+
+  /// No description provided for @meetingCallMeetingTopic.
+  ///
+  /// In uz, this message translates to:
+  /// **'Yig‘ilish mavzusi'**
+  String get meetingCallMeetingTopic;
+
+  /// No description provided for @meetingCallStartTime.
+  ///
+  /// In uz, this message translates to:
+  /// **'Boshlanish vaqti'**
+  String get meetingCallStartTime;
+
+  /// No description provided for @meetingCallSecurityAccess.
+  ///
+  /// In uz, this message translates to:
+  /// **'Xavfsizlik va kirish'**
+  String get meetingCallSecurityAccess;
+
+  /// No description provided for @meetingCallDirectJoin.
+  ///
+  /// In uz, this message translates to:
+  /// **'To‘g‘ridan-to‘g‘ri ulanish'**
+  String get meetingCallDirectJoin;
+
+  /// No description provided for @meetingCallMeetingUid.
+  ///
+  /// In uz, this message translates to:
+  /// **'MT-0005'**
+  String get meetingCallMeetingUid;
+
+  /// No description provided for @meetingCallTopicValue.
+  ///
+  /// In uz, this message translates to:
+  /// **'Figmani ko‘rib chiqish'**
+  String get meetingCallTopicValue;
+
+  /// No description provided for @meetingCallStartValue.
+  ///
+  /// In uz, this message translates to:
+  /// **'14.09.2026 15:40, 30 daqiqa'**
+  String get meetingCallStartValue;
+
+  /// No description provided for @meetingCallYouAreSharing.
+  ///
+  /// In uz, this message translates to:
+  /// **'Siz ekranni ulashyapsiz'**
+  String get meetingCallYouAreSharing;
+
+  /// No description provided for @meetingCallStopSharing.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ulashishni to‘xtatish'**
+  String get meetingCallStopSharing;
+
+  /// No description provided for @meetingCallChooseAnotherScreen.
+  ///
+  /// In uz, this message translates to:
+  /// **'Boshqa ekranni tanlash'**
+  String get meetingCallChooseAnotherScreen;
+
+  /// No description provided for @meetingCallChatEmpty.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hali xabar yo‘q'**
+  String get meetingCallChatEmpty;
+
+  /// No description provided for @meetingCallChatEmptyHint.
+  ///
+  /// In uz, this message translates to:
+  /// **'Uchrashuv davomida yozishingiz mumkin'**
+  String get meetingCallChatEmptyHint;
+
+  /// No description provided for @meetingCallCameraAndBackground.
+  ///
+  /// In uz, this message translates to:
+  /// **'Kamera va fon'**
+  String get meetingCallCameraAndBackground;
+
+  /// No description provided for @meetingCallCameraSection.
+  ///
+  /// In uz, this message translates to:
+  /// **'KAMERA'**
+  String get meetingCallCameraSection;
+
+  /// No description provided for @meetingCallFrontCamera.
+  ///
+  /// In uz, this message translates to:
+  /// **'Old kamera'**
+  String get meetingCallFrontCamera;
+
+  /// No description provided for @meetingCallRearCamera.
+  ///
+  /// In uz, this message translates to:
+  /// **'Orqa kamera'**
+  String get meetingCallRearCamera;
+
+  /// No description provided for @meetingCallBackgroundSection.
+  ///
+  /// In uz, this message translates to:
+  /// **'FON'**
+  String get meetingCallBackgroundSection;
+
+  /// No description provided for @meetingCallBlurBackground.
+  ///
+  /// In uz, this message translates to:
+  /// **'Fonni xiralashtirish'**
+  String get meetingCallBlurBackground;
+
+  /// No description provided for @meetingCallNoBackground.
+  ///
+  /// In uz, this message translates to:
+  /// **'Fonsiz'**
+  String get meetingCallNoBackground;
+
+  /// No description provided for @meetingCallOfficeBackgrounds.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ofis fonlari'**
+  String get meetingCallOfficeBackgrounds;
+
+  /// No description provided for @meetingCallSearchParticipant.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ishtirokchini qidirish'**
+  String get meetingCallSearchParticipant;
+
+  /// No description provided for @meetingCallMicRequestTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Mikrofonni yoqasizmi?'**
+  String get meetingCallMicRequestTitle;
+
+  /// No description provided for @meetingCallCameraRequestTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Kamerani yoqasizmi?'**
+  String get meetingCallCameraRequestTitle;
+
+  /// No description provided for @meetingCallRequester.
+  ///
+  /// In uz, this message translates to:
+  /// **'Safarali Turotov'**
+  String get meetingCallRequester;
+
+  /// No description provided for @meetingCallOrganizerRequested.
+  ///
+  /// In uz, this message translates to:
+  /// **'Tashkilotchi, hozir so‘radi'**
+  String get meetingCallOrganizerRequested;
+
+  /// No description provided for @meetingCallMicRequestHint.
+  ///
+  /// In uz, this message translates to:
+  /// **'Qaror sizniki. Tayyor bo‘lmasangiz, keyinroq o‘zingiz yoqishingiz mumkin.'**
+  String get meetingCallMicRequestHint;
+
+  /// No description provided for @meetingCallCameraRequestHint.
+  ///
+  /// In uz, this message translates to:
+  /// **'Qaror sizniki. Istamasangiz, kamerani o‘chiq qoldiring.'**
+  String get meetingCallCameraRequestHint;
+
+  /// No description provided for @meetingCallNotNow.
+  ///
+  /// In uz, this message translates to:
+  /// **'Hozircha yo‘q'**
+  String get meetingCallNotNow;
+
+  /// No description provided for @meetingCallEnableMicrophone.
+  ///
+  /// In uz, this message translates to:
+  /// **'Mikrofonni yoqish'**
+  String get meetingCallEnableMicrophone;
+
+  /// No description provided for @meetingCallEnableCamera.
+  ///
+  /// In uz, this message translates to:
+  /// **'Kamerani yoqish'**
+  String get meetingCallEnableCamera;
+
+  /// No description provided for @meetingCallStickersTitle.
+  ///
+  /// In uz, this message translates to:
+  /// **'Stikerlar'**
+  String get meetingCallStickersTitle;
+
+  /// No description provided for @meetingCallSendMessage.
+  ///
+  /// In uz, this message translates to:
+  /// **'Xabar yuborish'**
+  String get meetingCallSendMessage;
 }
 
 class _AppLocalizationsDelegate

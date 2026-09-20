@@ -293,6 +293,7 @@ class MeetingRemoteDataSourceImpl implements MeetingRemoteDataSource {
     'start_time': form.startTime.toIso8601String(),
     'duration_minutes': form.durationMinutes,
     'participants': form.participants,
+    'requires_approval': form.requiresApproval,
   };
 
   Map<String, dynamic> _meetingPatchData(MeetingPatch patch) => {
@@ -307,6 +308,8 @@ class MeetingRemoteDataSourceImpl implements MeetingRemoteDataSource {
     if (patch.durationMinutes != null)
       'duration_minutes': patch.durationMinutes,
     if (patch.participants != null) 'participants': patch.participants,
+    if (patch.requiresApproval != null)
+      'requires_approval': patch.requiresApproval,
   };
 
   Map<String, dynamic> _attendanceUpdateData(

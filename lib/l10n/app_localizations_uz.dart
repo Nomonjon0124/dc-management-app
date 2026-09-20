@@ -1095,6 +1095,47 @@ class AppLocalizationsUz extends AppLocalizations {
   String get meetingCreateParticipantsTitle => 'Qatnashchilarni qo‘shish';
 
   @override
+  String get meetingPreviewDetailsTitle => 'Yig‘ilish ma’lumotlari';
+
+  @override
+  String get meetingPreviewApprovalTitle => 'Tasdiqlash talabi';
+
+  @override
+  String get meetingPreviewApprovalDescription =>
+      'Yoqilsa, har bir ishtirokchini yaratuvchi, loyiha menejeri yoki admin tasdiqlaydi.';
+
+  @override
+  String get meetingPreviewActive => 'Davom etmoqda';
+
+  @override
+  String get meetingPreviewJoin => 'Yig‘ilishga kirish';
+
+  @override
+  String get meetingPreviewSave => 'Saqlash';
+
+  @override
+  String get meetingPreviewProject => 'Marketing Platform';
+
+  @override
+  String get meetingPreviewProjectSecond => 'Raqamli Nazorat';
+
+  @override
+  String get meetingPreviewName => 'Test qilish';
+
+  @override
+  String get meetingPreviewPenalty => '20';
+
+  @override
+  String get meetingPreviewDescription =>
+      'CRM tizimida yangi “Hisobotlar” bo‘limini qo‘shish. Admin barcha ma’lumotlarni ko‘ra olishi kerak.';
+
+  @override
+  String get meetingPreviewParticipantOne => 'Ali Valiyev';
+
+  @override
+  String get meetingPreviewParticipantTwo => 'Madina Karimova';
+
+  @override
   String get meetingCreateCompleted => 'Tugatildimi?';
 
   @override
@@ -1585,4 +1626,288 @@ class AppLocalizationsUz extends AppLocalizations {
   @override
   String get expenseRequestCreateSuccessMessage =>
       'Xarajat so\'rovingiz muvaffaqiyatli yuborildi.';
+
+  @override
+  String get meetingCallJoinTitle => 'Uchrashuvga qo‘shilish';
+
+  @override
+  String get meetingCallWaitingTitle => 'Ruxsat kutilmoqda';
+
+  @override
+  String get meetingCallCameraOff => 'Kamera o‘chirilgan';
+
+  @override
+  String get meetingCallMicrophone => 'Mikrofon';
+
+  @override
+  String get meetingCallCamera => 'Kamera';
+
+  @override
+  String get meetingCallSampleTitle => 'Haftalik loyiha yig‘ilishi';
+
+  @override
+  String get meetingCallCodeCopied => 'Uchrashuv kodi nusxalandi';
+
+  @override
+  String get meetingCallJoin => 'Qo‘shilish';
+
+  @override
+  String get meetingCallApprovalHint =>
+      'Tashkilotchi ruxsat bergach uchrashuvga kirasiz.';
+
+  @override
+  String get meetingCallRequestSent => 'So‘rov yuborildi';
+
+  @override
+  String get meetingCallWaitingHint =>
+      'Tashkilotchi ruxsat bergach avtomatik kirasiz.';
+
+  @override
+  String get meetingCallCancel => 'Bekor qilish';
+
+  @override
+  String get meetingCallPreviewApprove => 'Demo: ruxsat berildi';
+
+  @override
+  String get meetingCallName => 'Meet nomi';
+
+  @override
+  String get meetingCallEnd => 'Yig‘ilishni tugatish';
+
+  @override
+  String get meetingCallLeave => 'Chiqish';
+
+  @override
+  String get meetingCallYou => 'Siz';
+
+  @override
+  String get meetingCallSelfName => 'Safarali Turotov (siz)';
+
+  @override
+  String get meetingCallDilnoza => 'Dilnoza Sattorova';
+
+  @override
+  String get meetingCallBekzod => 'Bekzod Qodirov';
+
+  @override
+  String get meetingCallRaisedNotice => 'Dilnoza Sattorova qo‘l ko‘tardi';
+
+  @override
+  String get meetingCallWantsToJoin => 'uchrashuvga qo‘shilmoqchi';
+
+  @override
+  String get meetingCallReject => 'Rad etish';
+
+  @override
+  String get meetingCallAllow => 'Ruxsat berish';
+
+  @override
+  String get meetingCallRaiseHand => 'Qo‘l ko‘tarish';
+
+  @override
+  String get meetingCallMore => 'Yana';
+
+  @override
+  String get meetingCallParticipantsCount => 'Ishtirokchilar (3)';
+
+  @override
+  String get meetingCallParticipants => 'Ishtirokchilar';
+
+  @override
+  String get meetingCallChat => 'Chat';
+
+  @override
+  String get meetingCallClose => 'Yopish';
+
+  @override
+  String get meetingCallSearch => 'Qidirish';
+
+  @override
+  String get meetingCallInMeeting => 'UCHRASHUVDA';
+
+  @override
+  String get meetingCallOrganizer => 'Tashkilotchi';
+
+  @override
+  String get meetingCallParticipant => 'Ishtirokchi';
+
+  @override
+  String get meetingCallChatNote => 'Xabarlar uchrashuv tugagach o‘chiriladi.';
+
+  @override
+  String get meetingCallSampleMessageOne =>
+      'Hisobotni ekranga chiqaring, iltimos';
+
+  @override
+  String get meetingCallSampleMessageTwo => 'Bir daqiqa, ulashaman';
+
+  @override
+  String get meetingCallMessageHint => 'Xabar yozing';
+
+  @override
+  String get meetingCallShareScreen => 'Ekranni ulashish';
+
+  @override
+  String get meetingCallStickers => 'Stikerlar';
+
+  @override
+  String get meetingCallMicAndSpeaker => 'Mikrofon va dinamik';
+
+  @override
+  String get meetingCallMicrophoneSection => 'MIKROFON';
+
+  @override
+  String get meetingCallSpeakerSection => 'DINAMIK';
+
+  @override
+  String get meetingCallIphoneMicrophone => 'iPhone mikrofoni';
+
+  @override
+  String get meetingCallAirpods => 'AirPods Pro';
+
+  @override
+  String get meetingCallWiredHeadset => 'Simli quloqchin';
+
+  @override
+  String get meetingCallIphoneSpeaker => 'iPhone dinamigi';
+
+  @override
+  String get meetingCallExitQuestion => 'Uchrashuvdan chiqasizmi?';
+
+  @override
+  String get meetingCallExitHint =>
+      'Havola amal qiladi, istalgan vaqtda qayta qo‘shilishingiz mumkin.';
+
+  @override
+  String get meetingCallEndForEveryone => 'Yig‘ilishni hamma uchun tugatish';
+
+  @override
+  String get meetingCallMeetingEndedTitle => 'Siz uchrashuvdan chiqdingiz';
+
+  @override
+  String get meetingCallMeetingEndedHint =>
+      'Havola hali ham amal qiladi, istalgan vaqtda qaytishingiz mumkin.';
+
+  @override
+  String get meetingCallRejoin => 'Qayta qo‘shilish';
+
+  @override
+  String get meetingCallHome => 'Bosh sahifaga';
+
+  @override
+  String get meetingCallDetails => 'Yig‘ilish tafsilotlari';
+
+  @override
+  String get meetingCallDetailsHint => 'Havola va rasmiy ma’lumotlar';
+
+  @override
+  String get meetingCallJoinDetails => 'QO‘SHILISH MA’LUMOTLARI';
+
+  @override
+  String get meetingCallMeetingLink => 'Yig‘ilish havolasi';
+
+  @override
+  String get meetingCallMeetingParams => 'YIG‘ILISH PARAMETRLARI';
+
+  @override
+  String get meetingCallOfficialUid => 'Rasmiy UID';
+
+  @override
+  String get meetingCallMeetingTopic => 'Yig‘ilish mavzusi';
+
+  @override
+  String get meetingCallStartTime => 'Boshlanish vaqti';
+
+  @override
+  String get meetingCallSecurityAccess => 'Xavfsizlik va kirish';
+
+  @override
+  String get meetingCallDirectJoin => 'To‘g‘ridan-to‘g‘ri ulanish';
+
+  @override
+  String get meetingCallMeetingUid => 'MT-0005';
+
+  @override
+  String get meetingCallTopicValue => 'Figmani ko‘rib chiqish';
+
+  @override
+  String get meetingCallStartValue => '14.09.2026 15:40, 30 daqiqa';
+
+  @override
+  String get meetingCallYouAreSharing => 'Siz ekranni ulashyapsiz';
+
+  @override
+  String get meetingCallStopSharing => 'Ulashishni to‘xtatish';
+
+  @override
+  String get meetingCallChooseAnotherScreen => 'Boshqa ekranni tanlash';
+
+  @override
+  String get meetingCallChatEmpty => 'Hali xabar yo‘q';
+
+  @override
+  String get meetingCallChatEmptyHint =>
+      'Uchrashuv davomida yozishingiz mumkin';
+
+  @override
+  String get meetingCallCameraAndBackground => 'Kamera va fon';
+
+  @override
+  String get meetingCallCameraSection => 'KAMERA';
+
+  @override
+  String get meetingCallFrontCamera => 'Old kamera';
+
+  @override
+  String get meetingCallRearCamera => 'Orqa kamera';
+
+  @override
+  String get meetingCallBackgroundSection => 'FON';
+
+  @override
+  String get meetingCallBlurBackground => 'Fonni xiralashtirish';
+
+  @override
+  String get meetingCallNoBackground => 'Fonsiz';
+
+  @override
+  String get meetingCallOfficeBackgrounds => 'Ofis fonlari';
+
+  @override
+  String get meetingCallSearchParticipant => 'Ishtirokchini qidirish';
+
+  @override
+  String get meetingCallMicRequestTitle => 'Mikrofonni yoqasizmi?';
+
+  @override
+  String get meetingCallCameraRequestTitle => 'Kamerani yoqasizmi?';
+
+  @override
+  String get meetingCallRequester => 'Safarali Turotov';
+
+  @override
+  String get meetingCallOrganizerRequested => 'Tashkilotchi, hozir so‘radi';
+
+  @override
+  String get meetingCallMicRequestHint =>
+      'Qaror sizniki. Tayyor bo‘lmasangiz, keyinroq o‘zingiz yoqishingiz mumkin.';
+
+  @override
+  String get meetingCallCameraRequestHint =>
+      'Qaror sizniki. Istamasangiz, kamerani o‘chiq qoldiring.';
+
+  @override
+  String get meetingCallNotNow => 'Hozircha yo‘q';
+
+  @override
+  String get meetingCallEnableMicrophone => 'Mikrofonni yoqish';
+
+  @override
+  String get meetingCallEnableCamera => 'Kamerani yoqish';
+
+  @override
+  String get meetingCallStickersTitle => 'Stikerlar';
+
+  @override
+  String get meetingCallSendMessage => 'Xabar yuborish';
 }

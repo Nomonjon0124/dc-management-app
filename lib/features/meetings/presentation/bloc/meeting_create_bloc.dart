@@ -104,7 +104,12 @@ class MeetingCreateBloc extends Bloc<MeetingCreateEvent, MeetingCreateState> {
       if (event.closeAfterCreate && meeting.id > 0) {
         await _closeMeeting(meeting.id);
       }
-      emit(state.copyWith(submitStatus: MeetingCreateSubmitStatus.success));
+      emit(
+        state.copyWith(
+          submitStatus: MeetingCreateSubmitStatus.success,
+          submittedMeeting: meeting,
+        ),
+      );
     } on Failure catch (failure) {
       emit(
         state.copyWith(
@@ -204,9 +209,16 @@ class MeetingCreateBloc extends Bloc<MeetingCreateEvent, MeetingCreateState> {
   ) async {
     emit(state.copyWith(submitStatus: MeetingCreateSubmitStatus.submitting));
     try {
-      await _updateMeeting(UpdateMeetingParams(id: event.id, form: event.form));
+      final meeting = await _updateMeeting(
+        UpdateMeetingParams(id: event.id, form: event.form),
+      );
       if (event.closeAfterUpdate) await _closeMeeting(event.id);
-      emit(state.copyWith(submitStatus: MeetingCreateSubmitStatus.success));
+      emit(
+        state.copyWith(
+          submitStatus: MeetingCreateSubmitStatus.success,
+          submittedMeeting: meeting,
+        ),
+      );
     } on Failure catch (failure) {
       emit(
         state.copyWith(

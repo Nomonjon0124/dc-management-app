@@ -28,6 +28,11 @@ abstract final class ApiConstants {
   static String notificationsSocket(String ticket) =>
       '$wsBaseUrl/ws/notifications/?ticket=$ticket';
 
+  /// Meeting-specific orchestration socket. The meeting contract uses the
+  /// `/api/ws/meetings/` prefix, unlike the existing global notification WS.
+  static String meetingSocket(int meetingId, String ticket) =>
+      '$wsBaseUrl/api/ws/meetings/$meetingId/?ticket=$ticket';
+
   // ── Device (FCM) ──────────────────────────────────────────────────────
   /// Qurilmani FCM token bilan ro‘yxatdan o‘tkazish (`POST`).
   static const devicesRegister = '/devices/register/';

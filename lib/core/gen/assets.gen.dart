@@ -211,6 +211,62 @@ class $AssetsIconsGen {
   SvgGenImage get icUserGroup =>
       const SvgGenImage('assets/icons/ic_user_group.svg');
 
+  /// File path: assets/icons/meeting_call_end.svg
+  SvgGenImage get meetingCallEnd =>
+      const SvgGenImage('assets/icons/meeting_call_end.svg');
+
+  /// File path: assets/icons/meeting_chat.svg
+  SvgGenImage get meetingChat =>
+      const SvgGenImage('assets/icons/meeting_chat.svg');
+
+  /// File path: assets/icons/meeting_copy.svg
+  SvgGenImage get meetingCopy =>
+      const SvgGenImage('assets/icons/meeting_copy.svg');
+
+  /// File path: assets/icons/meeting_hand.svg
+  SvgGenImage get meetingHand =>
+      const SvgGenImage('assets/icons/meeting_hand.svg');
+
+  /// File path: assets/icons/meeting_info.svg
+  SvgGenImage get meetingInfo =>
+      const SvgGenImage('assets/icons/meeting_info.svg');
+
+  /// File path: assets/icons/meeting_join.svg
+  SvgGenImage get meetingJoin =>
+      const SvgGenImage('assets/icons/meeting_join.svg');
+
+  /// File path: assets/icons/meeting_mic.svg
+  SvgGenImage get meetingMic =>
+      const SvgGenImage('assets/icons/meeting_mic.svg');
+
+  /// File path: assets/icons/meeting_mic_off.svg
+  SvgGenImage get meetingMicOff =>
+      const SvgGenImage('assets/icons/meeting_mic_off.svg');
+
+  /// File path: assets/icons/meeting_power.svg
+  SvgGenImage get meetingPower =>
+      const SvgGenImage('assets/icons/meeting_power.svg');
+
+  /// File path: assets/icons/meeting_screen.svg
+  SvgGenImage get meetingScreen =>
+      const SvgGenImage('assets/icons/meeting_screen.svg');
+
+  /// File path: assets/icons/meeting_send.svg
+  SvgGenImage get meetingSend =>
+      const SvgGenImage('assets/icons/meeting_send.svg');
+
+  /// File path: assets/icons/meeting_sticker.svg
+  SvgGenImage get meetingSticker =>
+      const SvgGenImage('assets/icons/meeting_sticker.svg');
+
+  /// File path: assets/icons/meeting_video.svg
+  SvgGenImage get meetingVideo =>
+      const SvgGenImage('assets/icons/meeting_video.svg');
+
+  /// File path: assets/icons/meeting_video_off.svg
+  SvgGenImage get meetingVideoOff =>
+      const SvgGenImage('assets/icons/meeting_video_off.svg');
+
   /// List of all assets
   List<SvgGenImage> get values => [
     cTuilconLoginLarge,
@@ -265,6 +321,20 @@ class $AssetsIconsGen {
     icTuilconTime,
     icUser,
     icUserGroup,
+    meetingCallEnd,
+    meetingChat,
+    meetingCopy,
+    meetingHand,
+    meetingInfo,
+    meetingJoin,
+    meetingMic,
+    meetingMicOff,
+    meetingPower,
+    meetingScreen,
+    meetingSend,
+    meetingSticker,
+    meetingVideo,
+    meetingVideoOff,
   ];
 }
 
@@ -290,6 +360,18 @@ class $AssetsImagesGen {
   /// File path: assets/images/history_image.png
   AssetGenImage get historyImage =>
       const AssetGenImage('assets/images/history_image.png');
+
+  /// File path: assets/images/meeting_bekzod.png
+  AssetGenImage get meetingBekzod =>
+      const AssetGenImage('assets/images/meeting_bekzod.png');
+
+  /// File path: assets/images/meeting_dilnoza.png
+  AssetGenImage get meetingDilnoza =>
+      const AssetGenImage('assets/images/meeting_dilnoza.png');
+
+  /// File path: assets/images/meeting_self.png
+  AssetGenImage get meetingSelf =>
+      const AssetGenImage('assets/images/meeting_self.png');
 
   /// File path: assets/images/meetings.png
   AssetGenImage get meetings =>
@@ -329,6 +411,9 @@ class $AssetsImagesGen {
     byTasks,
     cardboardTexture,
     historyImage,
+    meetingBekzod,
+    meetingDilnoza,
+    meetingSelf,
     meetings,
     onSpendingRequests,
     perEmployee,

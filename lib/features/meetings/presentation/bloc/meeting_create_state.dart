@@ -8,6 +8,7 @@ class MeetingCreateState extends Equatable {
     this.members = const [],
     this.membersLoading = false,
     this.detail,
+    this.submittedMeeting,
     this.submitStatus = MeetingCreateSubmitStatus.idle,
     this.submitFailure,
     this.closeStatus = MeetingCreateSubmitStatus.idle,
@@ -24,6 +25,9 @@ class MeetingCreateState extends Equatable {
 
   /// `GET /meetings/{id}/` javobi (detail rejimi).
   final Meeting? detail;
+
+  /// The server response from the latest create/update request.
+  final Meeting? submittedMeeting;
 
   final MeetingCreateSubmitStatus submitStatus;
   final Failure? submitFailure;
@@ -54,6 +58,7 @@ class MeetingCreateState extends Equatable {
     List<ProjectMember>? members,
     bool? membersLoading,
     Meeting? detail,
+    Meeting? submittedMeeting,
     MeetingCreateSubmitStatus? submitStatus,
     Failure? submitFailure,
     MeetingCreateSubmitStatus? closeStatus,
@@ -67,6 +72,7 @@ class MeetingCreateState extends Equatable {
     members: members ?? this.members,
     membersLoading: membersLoading ?? this.membersLoading,
     detail: detail ?? this.detail,
+    submittedMeeting: submittedMeeting ?? this.submittedMeeting,
     submitStatus: submitStatus ?? this.submitStatus,
     submitFailure: submitFailure ?? this.submitFailure,
     closeStatus: closeStatus ?? this.closeStatus,
@@ -83,6 +89,7 @@ class MeetingCreateState extends Equatable {
     members,
     membersLoading,
     detail,
+    submittedMeeting,
     submitStatus,
     submitFailure,
     closeStatus,

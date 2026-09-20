@@ -16,6 +16,9 @@ import '../../features/meetings/domain/entities/meeting_filter.dart';
 import '../../features/meetings/presentation/pages/meeting_create_page.dart';
 import '../../features/meetings/presentation/pages/meeting_filter_page.dart';
 import '../../features/meetings/presentation/pages/meeting_reason_page.dart';
+import '../../features/meetings/presentation/pages/meeting_new_design/meeting_design_preview_page.dart';
+import '../../features/meetings/presentation/pages/meeting_new_design/meeting_call_preview_page.dart';
+import '../../features/meetings/presentation/pages/meeting_room_page.dart';
 import '../../features/meetings/presentation/pages/meetings_page.dart';
 import '../../features/reports/domain/entities/project_report_filter.dart';
 import '../../features/reports/domain/entities/expense_report_filter.dart';
@@ -406,13 +409,14 @@ class AppRouter {
         GoRoute(
           name: Routes.meetingCreate.name,
           path: Routes.meetingCreate.path,
-          builder: (context, state) => const MeetingCreatePage(),
+          builder: (context, state) => const MeetingCreatePage(newDesign: true),
         ),
         GoRoute(
           name: Routes.meetingEdit.name,
           path: Routes.meetingEdit.path,
           builder: (context, state) => MeetingCreatePage(
             initial: state.extra is Meeting ? state.extra! as Meeting : null,
+            newDesign: true,
           ),
         ),
         GoRoute(
@@ -425,12 +429,35 @@ class AppRouter {
           ),
         ),
         GoRoute(
+          name: Routes.meetingUiPreview.name,
+          path: Routes.meetingUiPreview.path,
+          builder: (context, state) => MeetingDesignPreviewPage(
+            mode: switch (state.uri.queryParameters['mode']) {
+              'detail' || 'details' => MeetingPreviewMode.details,
+              _ => MeetingPreviewMode.create,
+            },
+          ),
+        ),
+        GoRoute(
+          name: Routes.meetingCallPreview.name,
+          path: Routes.meetingCallPreview.path,
+          builder: (context, state) => const MeetingCallPreviewPage(),
+        ),
+        GoRoute(
+          name: Routes.meetingRoom.name,
+          path: Routes.meetingRoom.path,
+          builder: (context, state) => MeetingRoomPage(
+            meetingId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
+          ),
+        ),
+        GoRoute(
           name: Routes.meetingDetail.name,
           path: Routes.meetingDetail.path,
           builder: (context, state) => MeetingCreatePage(
             initial: state.extra is Meeting ? state.extra! as Meeting : null,
             meetingId: int.tryParse(state.pathParameters['id'] ?? ''),
             readOnly: true,
+            newDesign: true,
           ),
         ),
         GoRoute(

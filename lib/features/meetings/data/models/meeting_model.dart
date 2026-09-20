@@ -31,6 +31,7 @@ class MeetingModel extends Meeting {
     required super.isCompleted,
     required super.reason,
     required super.attended,
+    super.requiresApproval,
   });
 
   factory MeetingModel.fromJson(
@@ -77,7 +78,11 @@ class MeetingModel extends Meeting {
           if (e is Map)
             ProjectMember(
               id: intValue(e['id']) ?? 0,
-              username: pick(['username', 'full_name', 'name'], e.cast<String, dynamic>()),
+              username: pick([
+                'username',
+                'full_name',
+                'name',
+              ], e.cast<String, dynamic>()),
               position: pick(['position'], e.cast<String, dynamic>()),
               avatar: pick(['avatar'], e.cast<String, dynamic>()),
             ),
@@ -193,6 +198,9 @@ class MeetingModel extends Meeting {
           false,
       reason: str(json['reason']),
       attended: attended(),
+      requiresApproval: json['requires_approval'] is bool
+          ? json['requires_approval'] as bool
+          : null,
     );
   }
 }

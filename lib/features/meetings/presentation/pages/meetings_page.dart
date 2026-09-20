@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -60,6 +61,21 @@ class _MeetingsView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colors.backgroundBase,
+      floatingActionButton: kDebugMode
+          ? FloatingActionButton(
+              tooltip: AppLocalizations.of(context).meetingAdd,
+              backgroundColor: colors.accentStrong,
+              onPressed: () => context.pushNamed(Routes.meetingCreate.name),
+              child: Assets.icons.icPlus.svg(
+                width: 22.w,
+                height: 22.w,
+                colorFilter: ColorFilter.mode(
+                  colors.textWhite,
+                  BlendMode.srcIn,
+                ),
+              ),
+            )
+          : null,
       body: SafeArea(
         child: Column(
           children: [

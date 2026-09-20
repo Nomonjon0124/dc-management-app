@@ -28,6 +28,14 @@
 	<true/>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Hisobingizga tez va xavfsiz kirish uchun Face ID ishlatiladi.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Uchrashuvda video ishlatish uchun kamera kerak.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Uchrashuvda gaplashish uchun mikrofon kerak.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

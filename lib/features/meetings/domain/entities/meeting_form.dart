@@ -9,6 +9,7 @@ class MeetingForm {
     required this.startTime,
     required this.durationMinutes,
     this.participants = const [],
+    this.requiresApproval = false,
   });
 
   final int? project;
@@ -19,6 +20,7 @@ class MeetingForm {
   final DateTime startTime;
   final int durationMinutes;
   final List<int> participants;
+  final bool requiresApproval;
 }
 
 /// Partial request body for `PATCH /meetings/{id}/`.
@@ -32,6 +34,7 @@ class MeetingPatch {
     this.startTime,
     this.durationMinutes,
     this.participants,
+    this.requiresApproval,
   });
 
   final int? project;
@@ -42,4 +45,5 @@ class MeetingPatch {
   final DateTime? startTime;
   final int? durationMinutes;
   final List<int>? participants;
+  final bool? requiresApproval;
 }

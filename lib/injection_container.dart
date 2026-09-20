@@ -22,8 +22,12 @@ import 'features/auth/presentation/bloc/login_bloc.dart';
 import 'features/auth/presentation/pin/bloc/pin_bloc.dart';
 import 'features/auth/presentation/role/bloc/role_select_bloc.dart';
 import 'features/meetings/data/data_sources/meeting_remote_data_source.dart';
+import 'features/meetings/data/data_sources/meeting_realtime_data_source.dart';
 import 'features/meetings/data/repository/meeting_repository_impl.dart';
+import 'features/meetings/data/repository/meeting_room_repository_impl.dart';
+import 'features/meetings/data/services/livekit_media_service.dart';
 import 'features/meetings/domain/repository/meeting_repository.dart';
+import 'features/meetings/domain/repository/meeting_room_repository.dart';
 import 'features/meetings/domain/usecases/close_meeting_usecase.dart';
 import 'features/meetings/domain/usecases/create_meeting_usecase.dart';
 import 'features/meetings/domain/usecases/delete_meeting_usecase.dart';
@@ -43,6 +47,9 @@ import 'features/meetings/presentation/bloc/meeting_create_bloc.dart';
 import 'features/meetings/presentation/bloc/meeting_filter_bloc.dart';
 import 'features/meetings/presentation/bloc/meeting_reason_bloc.dart';
 import 'features/meetings/presentation/bloc/meetings_bloc.dart';
+import 'features/meetings/presentation/bloc/meeting_new_design/meeting_call_preview_bloc.dart';
+import 'features/meetings/presentation/bloc/meeting_new_design/meeting_design_preview_bloc.dart';
+import 'features/meetings/presentation/bloc/meeting_room_bloc.dart';
 import 'features/tasks/data/data_sources/task_remote_data_source.dart';
 import 'features/tasks/data/repository/task_repository_impl.dart';
 import 'features/tasks/domain/repository/task_repository.dart';
@@ -314,6 +321,18 @@ Future<void> configureDependencies() async {
         updateAttendance: getIt(),
         storage: getIt(),
       ),
+    )
+    ..registerFactory<MeetingCallPreviewBloc>(MeetingCallPreviewBloc.new)
+    ..registerFactory<MeetingDesignPreviewBloc>(MeetingDesignPreviewBloc.new)
+    ..registerLazySingleton<MeetingRealtimeDataSource>(
+      () => MeetingRealtimeDataSourceImpl(client: getIt(), logger: getIt()),
+    )
+    ..registerLazySingleton<LiveKitMediaService>(LiveKitMediaService.new)
+    ..registerLazySingleton<MeetingRoomRepository>(
+      () => MeetingRoomRepositoryImpl(realtime: getIt(), media: getIt()),
+    )
+    ..registerFactory<MeetingRoomBloc>(
+      () => MeetingRoomBloc(repository: getIt(), closeMeeting: getIt()),
     );
 
   // ── Tasks feature ─────────────────────────────────────────────────────

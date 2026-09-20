@@ -34,10 +34,12 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   thunder: ^0.2.5
   web_socket_channel: ^3.0.1
+  livekit_client: ^2.13.0
   fl_chart: ^1.2.0
   file_picker: ^8.1.6
   url_launcher: ^6.3.2
   local_auth: ^3.0.2
+  liquid_glass_easy: 4.3.1
 
 
 dev_dependencies:
