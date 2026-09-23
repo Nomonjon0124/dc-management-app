@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:livekit_client/livekit_client.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/extentions/text_extensions.dart';
@@ -10,26 +9,43 @@ import '../../../../core/widgets/tui_avatar.dart';
 import '../../../../injection_container.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/services/livekit_media_service.dart';
+import '../../domain/entities/meeting.dart';
 import '../../domain/entities/meeting_room.dart';
 import '../bloc/meeting_room_bloc.dart';
 import '../bloc/meeting_room_event.dart';
 import '../bloc/meeting_room_state.dart';
+import 'meeting_new_design/widgets/call/meeting_call_control_bar.dart';
+import 'meeting_new_design/widgets/call/meeting_call_join_request.dart';
+import 'meeting_new_design/widgets/call/meeting_call_participant_tile.dart';
+import 'meeting_new_design/widgets/call/meeting_call_stage.dart';
+import 'meeting_new_design/widgets/call/meeting_call_stickers_panel.dart';
+import 'meeting_new_design/widgets/call/meeting_call_top_bar.dart';
 import 'meeting_new_design/widgets/common/meeting_preview_button.dart';
 import 'meeting_new_design/widgets/common/meeting_preview_icon_button.dart';
 import 'meeting_new_design/widgets/common/meeting_preview_surface.dart';
+import 'meeting_new_design/widgets/form/meeting_preview_header.dart';
+import 'meeting_new_design/widgets/sheets/meeting_details_sheet.dart';
+import 'meeting_new_design/widgets/sheets/meeting_exit_sheet.dart';
+import 'meeting_new_design/widgets/sheets/meeting_chat_sheet.dart';
+import 'meeting_new_design/widgets/sheets/meeting_participants_sheet.dart';
 
-/// Production meeting room shell. UI-only preview pages intentionally remain
-/// separate from this page so demo state cannot be mistaken for server state.
+/// Production meeting room. The meeting WebSocket and LiveKit remain owned by
+/// [MeetingRoomBloc]; this page only renders the Figma-aligned UI for its state.
 class MeetingRoomPage extends StatelessWidget {
-  const MeetingRoomPage({super.key, required this.meetingId});
+  const MeetingRoomPage({
+    super.key,
+    required this.meetingId,
+    this.initialMeeting,
+  });
 
   final int meetingId;
+  final Meeting? initialMeeting;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          getIt<MeetingRoomBloc>()..add(MeetingRoomStarted(meetingId)),
+      create: (_) => getIt<MeetingRoomBloc>()
+        ..add(MeetingRoomStarted(meetingId, initialMeeting: initialMeeting)),
       child: const _MeetingRoomView(),
     );
   }
@@ -42,20 +58,25 @@ class _MeetingRoomView extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     return Scaffold(
-      backgroundColor: colors.backgroundBase,
+      backgroundColor: colors.backgroundElevation1,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) =>
               BlocBuilder<MeetingRoomBloc, MeetingRoomState>(
-                builder: (context, state) => Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 760.w),
-                    child: Padding(
-                      padding: EdgeInsets.all(16.w),
-                      child: _body(context, state, constraints),
+                builder: (context, state) {
+                  final connected =
+                      state.phase == MeetingRoomPhase.connected ||
+                      state.phase == MeetingRoomPhase.reconnecting;
+                  final body = _body(context, state, constraints);
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 900.w),
+                      child: connected
+                          ? body
+                          : Padding(padding: EdgeInsets.all(16.w), child: body),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
         ),
       ),
@@ -68,148 +89,372 @@ class _MeetingRoomView extends StatelessWidget {
     BoxConstraints constraints,
   ) {
     switch (state.phase) {
+      case MeetingRoomPhase.prejoin:
+        return _prejoin(context, state, constraints);
+      case MeetingRoomPhase.waitingOrganizer:
+      case MeetingRoomPhase.waitingApproval:
+      case MeetingRoomPhase.ticketLoading:
+      case MeetingRoomPhase.socketConnecting:
+      case MeetingRoomPhase.joiningMedia:
+        return _waiting(context, state, constraints);
       case MeetingRoomPhase.connected:
       case MeetingRoomPhase.reconnecting:
         return _connected(context, state, constraints);
-      case MeetingRoomPhase.waitingOrganizer:
-      case MeetingRoomPhase.waitingApproval:
-      case MeetingRoomPhase.socketConnecting:
-      case MeetingRoomPhase.ticketLoading:
-      case MeetingRoomPhase.joiningMedia:
-        return _waiting(context, state);
       case MeetingRoomPhase.rejected:
       case MeetingRoomPhase.failure:
       case MeetingRoomPhase.left:
       case MeetingRoomPhase.ended:
         return _result(context, state);
-      case MeetingRoomPhase.prejoin:
-        return _prejoin(context, state);
     }
   }
 
-  Widget _prejoin(BuildContext context, MeetingRoomState state) {
+  Widget _prejoin(
+    BuildContext context,
+    MeetingRoomState state,
+    BoxConstraints constraints,
+  ) {
     final colors = AppColors.of(context);
     final l10n = AppLocalizations.of(context);
-    return _scrollable(
-      children: [
-        _header(context, state.title, l10n.meetingCallJoinTitle),
-        SizedBox(height: 18.h),
-        MeetingPreviewSurface(
-          color: colors.cardSurface,
-          radius: 18.r,
-          child: Padding(
-            padding: EdgeInsets.all(16.w),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 180.h,
+    final compact = constraints.maxWidth > constraints.maxHeight;
+    final avatarSize = compact ? 56.0 : 88.0;
+    final stageHeight = compact ? constraints.maxHeight * 0.82 : 400.h;
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: constraints.maxHeight),
+        child: Column(
+          children: [
+            MeetingPreviewHeader(
+              title: l10n.meetingCallJoinTitle,
+              roundClose: true,
+            ),
+            SizedBox(height: 8.h),
+            MeetingCallStage(
+              child: ColoredBox(
+                color: colors.chartNeutral,
+                child: SizedBox(
+                  height: stageHeight,
                   width: double.infinity,
-                  child: _selfPreview(context, state),
-                ),
-                SizedBox(height: 16.h),
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 12.w,
-                  runSpacing: 12.h,
-                  children: [
-                    MeetingPreviewIconButton(
-                      asset: state.microphoneEnabled
-                          ? Assets.icons.meetingMic
-                          : Assets.icons.meetingMicOff,
-                      background: colors.backgroundElevation2,
-                      foreground: colors.iconStrong,
-                      semanticLabel: l10n.meetingCallMicrophone,
-                      onTap: () => context.read<MeetingRoomBloc>().add(
-                        const MeetingRoomMicrophoneToggled(),
+                  child: Stack(
+                    children: [
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            top: compact ? stageHeight * 0.2 : 116.h,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TuiAvatar(
+                                initial:
+                                    state.meeting?.participantName.isNotEmpty ==
+                                        true
+                                    ? state.meeting!.participantName
+                                    : l10n.meetingCallYou,
+                                avatarUrl:
+                                    state.meeting?.participantAvatar ?? '',
+                                size: avatarSize,
+                              ),
+                              SizedBox(height: 16.h),
+                              (state.cameraEnabled
+                                      ? l10n.meetingCallCamera
+                                      : l10n.meetingCallCameraOff)
+                                  .s(13.sp)
+                                  .w(500)
+                                  .c(colors.textSoft),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                    MeetingPreviewIconButton(
-                      asset: state.cameraEnabled
-                          ? Assets.icons.meetingVideo
-                          : Assets.icons.meetingVideoOff,
-                      background: colors.backgroundElevation2,
-                      foreground: colors.iconStrong,
-                      semanticLabel: l10n.meetingCallCamera,
-                      onTap: () => context.read<MeetingRoomBloc>().add(
-                        const MeetingRoomCameraToggled(),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: 20.h),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              MeetingPreviewIconButton(
+                                asset: state.microphoneEnabled
+                                    ? Assets.icons.meetingMic
+                                    : Assets.icons.meetingMicOff,
+                                background: state.microphoneEnabled
+                                    ? colors.backgroundElevation1
+                                    : colors.errorStrong,
+                                foreground: state.microphoneEnabled
+                                    ? colors.iconStrong
+                                    : colors.iconWhite,
+                                semanticLabel: l10n.meetingCallMicrophone,
+                                size: compact ? 40.w : null,
+                                iconSize: compact ? 18.w : null,
+                                onTap: () => context
+                                    .read<MeetingRoomBloc>()
+                                    .add(const MeetingRoomMicrophoneToggled()),
+                              ),
+                              SizedBox(width: 12.w),
+                              MeetingPreviewIconButton(
+                                asset: state.cameraEnabled
+                                    ? Assets.icons.meetingVideo
+                                    : Assets.icons.meetingVideoOff,
+                                background: state.cameraEnabled
+                                    ? colors.backgroundElevation1
+                                    : colors.errorStrong,
+                                foreground: state.cameraEnabled
+                                    ? colors.iconStrong
+                                    : colors.iconWhite,
+                                semanticLabel: l10n.meetingCallCamera,
+                                size: compact ? 40.w : null,
+                                iconSize: compact ? 18.w : null,
+                                onTap: () => context
+                                    .read<MeetingRoomBloc>()
+                                    .add(const MeetingRoomCameraToggled()),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 18.h),
-                MeetingPreviewButton(
-                  label: l10n.meetingCallJoin,
-                  background: colors.accentStrong,
-                  foreground: colors.textWhite,
-                  icon: Assets.icons.meetingJoin,
-                  onTap: () => context.read<MeetingRoomBloc>().add(
-                    const MeetingRoomJoinRequested(),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+            SizedBox(height: 16.h),
+            Align(
+              alignment: Alignment.centerLeft,
+              child:
+                  (state.title.isEmpty
+                          ? l10n.meetingCallSampleTitle
+                          : state.title)
+                      .s(20.sp)
+                      .w(800)
+                      .c(colors.textStrong)
+                      .copyWith(maxLines: 2, overflow: TextOverflow.ellipsis),
+            ),
+            SizedBox(height: 12.h),
+            MeetingPreviewSurface(
+              color: colors.backgroundElevation1Alt,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                child: Row(
+                  children: [
+                    Assets.icons.meetingCopy.svg(
+                      width: 18.w,
+                      height: 18.w,
+                      colorFilter: ColorFilter.mode(
+                        colors.iconSub,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    (state.meeting?.uid.isNotEmpty == true
+                            ? state.meeting!.uid
+                            : l10n.meetingCallMeetingUid)
+                        .s(15.sp)
+                        .w(800)
+                        .c(colors.textStrong),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 14.h),
+            MeetingPreviewButton(
+              label: l10n.meetingCallJoin,
+              background: colors.accentStrong,
+              foreground: colors.textWhite,
+              icon: Assets.icons.meetingJoin,
+              onTap: () => context.read<MeetingRoomBloc>().add(
+                const MeetingRoomJoinRequested(),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            l10n.meetingCallApprovalHint
+                .s(12.sp)
+                .w(500)
+                .c(colors.textSub)
+                .a(TextAlign.center),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  Widget _waiting(BuildContext context, MeetingRoomState state) {
+  Widget _previewStage(
+    BuildContext context,
+    MeetingRoomState state,
+    BoxConstraints constraints,
+  ) {
+    final colors = AppColors.of(context);
+    final l10n = AppLocalizations.of(context);
+    final compact = constraints.maxWidth > constraints.maxHeight;
+    final avatarSize = compact ? 56.0 : 88.0;
+    final stageHeight = compact ? constraints.maxHeight * 0.82 : 400.h;
+    return MeetingCallStage(
+      child: ColoredBox(
+        color: colors.chartNeutral,
+        child: SizedBox(
+          height: stageHeight,
+          width: double.infinity,
+          child: Stack(
+            children: [
+              Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: compact ? stageHeight * 0.2 : 116.h,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TuiAvatar(
+                        initial:
+                            state.meeting?.participantName.isNotEmpty == true
+                            ? state.meeting!.participantName
+                            : l10n.meetingCallYou,
+                        avatarUrl: state.meeting?.participantAvatar ?? '',
+                        size: avatarSize,
+                      ),
+                      SizedBox(height: 16.h),
+                      l10n.meetingCallCameraOff
+                          .s(13.sp)
+                          .w(500)
+                          .c(colors.textSoft),
+                    ],
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 20.h),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      MeetingPreviewIconButton(
+                        asset: state.microphoneEnabled
+                            ? Assets.icons.meetingMic
+                            : Assets.icons.meetingMicOff,
+                        background: state.microphoneEnabled
+                            ? colors.backgroundElevation1
+                            : colors.errorStrong,
+                        foreground: state.microphoneEnabled
+                            ? colors.iconStrong
+                            : colors.iconWhite,
+                        semanticLabel: l10n.meetingCallMicrophone,
+                        size: compact ? 40.w : null,
+                        iconSize: compact ? 18.w : null,
+                        onTap: () => context.read<MeetingRoomBloc>().add(
+                          const MeetingRoomMicrophoneToggled(),
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      MeetingPreviewIconButton(
+                        asset: state.cameraEnabled
+                            ? Assets.icons.meetingVideo
+                            : Assets.icons.meetingVideoOff,
+                        background: state.cameraEnabled
+                            ? colors.backgroundElevation1
+                            : colors.errorStrong,
+                        foreground: state.cameraEnabled
+                            ? colors.iconStrong
+                            : colors.iconWhite,
+                        semanticLabel: l10n.meetingCallCamera,
+                        size: compact ? 40.w : null,
+                        iconSize: compact ? 18.w : null,
+                        onTap: () => context.read<MeetingRoomBloc>().add(
+                          const MeetingRoomCameraToggled(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _waiting(
+    BuildContext context,
+    MeetingRoomState state,
+    BoxConstraints constraints,
+  ) {
     final colors = AppColors.of(context);
     final l10n = AppLocalizations.of(context);
     final isConnecting = state.isLoading;
-    final title = state.phase == MeetingRoomPhase.waitingOrganizer
+    final waitingForOrganizer =
+        state.phase == MeetingRoomPhase.waitingOrganizer;
+    final title = waitingForOrganizer
         ? l10n.meetingCallWaitingTitle
-        : l10n.meetingCallRequestSent;
-    final hint = state.phase == MeetingRoomPhase.waitingOrganizer
+        : l10n.meetingCallWaitingTitle;
+    final hint = waitingForOrganizer
         ? l10n.meetingCallWaitingHint
-        : l10n.meetingCallApprovalHint;
-    return _scrollable(
-      children: [
-        _header(context, state.title, title),
-        SizedBox(height: 18.h),
-        MeetingPreviewSurface(
-          color: colors.cardSurface,
-          radius: 18.r,
-          child: Padding(
-            padding: EdgeInsets.all(24.w),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isConnecting)
-                  SizedBox(
-                    width: 28.w,
-                    height: 28.w,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.w,
-                      color: colors.accentStrong,
+        : l10n.meetingCallWaitingHint;
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        children: [
+          MeetingPreviewHeader(title: title, roundClose: true),
+          SizedBox(height: 8.h),
+          _previewStage(context, state, constraints),
+          SizedBox(height: 20.h),
+          MeetingPreviewSurface(
+            color: colors.backgroundBase,
+            radius: 12.r,
+            borderColor: colors.strokeSub,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              child: Row(
+                children: [
+                  if (isConnecting)
+                    SizedBox(
+                      width: 24.w,
+                      height: 24.w,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.w,
+                        color: colors.accentStrong,
+                      ),
+                    )
+                  else
+                    Assets.icons.icTuilconTime.svg(
+                      width: 24.w,
+                      height: 24.w,
+                      colorFilter: ColorFilter.mode(
+                        colors.iconStrong,
+                        BlendMode.srcIn,
+                      ),
                     ),
-                  )
-                else
-                  Assets.icons.meetingInfo.svg(
-                    width: 34.w,
-                    height: 34.w,
-                    colorFilter: ColorFilter.mode(
-                      colors.iconAccent,
-                      BlendMode.srcIn,
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        l10n.meetingCallRequestSent
+                            .s(15.sp)
+                            .w(800)
+                            .c(colors.textStrong),
+                        SizedBox(height: 4.h),
+                        hint.s(13.sp).w(500).c(colors.textSub),
+                      ],
                     ),
                   ),
-                SizedBox(height: 16.h),
-                hint.s(15.sp).w(500).c(colors.textSub).a(TextAlign.center),
-                SizedBox(height: 20.h),
-                MeetingPreviewButton(
-                  label: l10n.meetingCallCancel,
-                  background: colors.backgroundElevation2,
-                  foreground: colors.textStrong,
-                  onTap: () => context.read<MeetingRoomBloc>().add(
-                    const MeetingRoomJoinCancelled(),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+          SizedBox(height: 16.h),
+          MeetingPreviewButton(
+            label: l10n.meetingCallCancel,
+            background: colors.backgroundElevation2,
+            foreground: colors.textStrong,
+            icon: Assets.icons.icClose,
+            onTap: () => context.read<MeetingRoomBloc>().add(
+              const MeetingRoomJoinCancelled(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -218,9 +463,12 @@ class _MeetingRoomView extends StatelessWidget {
     MeetingRoomState state,
     BoxConstraints constraints,
   ) {
-    final colors = AppColors.of(context);
     final l10n = AppLocalizations.of(context);
+    final media = getIt<LiveKitMediaService>();
     final compact = constraints.maxWidth < 420.w;
+    final displayError = state.error == MeetingRoomError.screenShareFailed
+        ? l10n.meetingCallScreenShareError
+        : state.errorMessage;
     final crossAxisCount = constraints.maxWidth >= 700.w
         ? 3
         : state.participants.length > 1 && !compact
@@ -228,204 +476,306 @@ class _MeetingRoomView extends StatelessWidget {
         : 1;
     return Column(
       children: [
-        _header(context, state.title, l10n.meetingCallInMeeting),
-        if (state.errorMessage != null)
+        MeetingCallTopBar(
+          title: state.title.isEmpty ? l10n.meetingCallInMeeting : state.title,
+          participantCount: '${state.participants.length}',
+          onTitleTap: () => _showDetails(context, state),
+          onEndTap: () => _showExit(context, state),
+          onStickerTap: () => _showStickers(context),
+          onParticipantsTap: () => _showParticipants(context, state),
+          endLabel: l10n.meetingCallEnd,
+          stickerLabel: l10n.meetingCallStickers,
+          showSticker: true,
+        ),
+        if (displayError != null)
           Padding(
-            padding: EdgeInsets.only(top: 8.h),
-            child: state.errorMessage!
+            padding: EdgeInsets.only(top: 4.h),
+            child: displayError
                 .s(12.sp)
                 .w(500)
-                .c(colors.errorStrong)
+                .c(AppColors.of(context).errorStrong)
+                .a(TextAlign.center)
                 .copyWith(maxLines: 2, overflow: TextOverflow.ellipsis),
           ),
-        SizedBox(height: 12.h),
+        SizedBox(height: 8.h),
         Expanded(
-          child: state.participants.isEmpty
-              ? Center(
-                  child: l10n.meetingCallParticipant
-                      .s(14.sp)
-                      .w(500)
-                      .c(colors.textSub),
-                )
-              : GridView.builder(
-                  padding: EdgeInsets.only(bottom: 12.h),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 10.w,
-                    mainAxisSpacing: 10.h,
-                    childAspectRatio: compact ? 1.2 : 1.35,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: MeetingCallStage(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: _speakerStage(
+                      context,
+                      state,
+                      media,
+                      crossAxisCount,
+                      compact,
+                      l10n,
+                    ),
                   ),
-                  itemCount: state.participants.length,
-                  itemBuilder: (context, index) =>
-                      _ParticipantTile(participant: state.participants[index]),
-                ),
+                  if (state.participants.any((p) => p.isLocal))
+                    Positioned(
+                      right: 12.w,
+                      top: 12.h,
+                      child: SizedBox(
+                        width: 96.w,
+                        height: 128.h,
+                        child: _participantTile(
+                          context,
+                          state.participants.firstWhere((p) => p.isLocal),
+                          media,
+                          l10n,
+                          meeting: state.meeting,
+                          avatarSize: 40,
+                          backgroundColor: AppColors.of(
+                            context,
+                          ).meetingLocalTile,
+                          showMicrophone: false,
+                          compactLabel: true,
+                        ),
+                      ),
+                    ),
+                  if (state.isHost && state.pendingRequests.isNotEmpty)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      child: _pendingRequestOverlay(context, state),
+                    ),
+                  if (state.handRaised)
+                    Positioned(
+                      top: 16.h,
+                      left: 12.w,
+                      right: 12.w,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: AppColors.of(context).successSoft,
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 10.h,
+                          ),
+                          child: Row(
+                            children: [
+                              Assets.icons.meetingHand.svg(
+                                width: 20.w,
+                                height: 20.w,
+                                colorFilter: ColorFilter.mode(
+                                  AppColors.of(context).successStrong,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                              SizedBox(width: 8.w),
+                              Expanded(
+                                child: l10n.meetingCallRaisedNotice
+                                    .s(13.sp)
+                                    .w(700)
+                                    .c(AppColors.of(context).textStrong),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (state.reactions.isNotEmpty)
+                    Positioned(
+                      left: 20.w,
+                      top: 28.h,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (final reaction in state.reactions)
+                            Padding(
+                              padding: EdgeInsets.only(bottom: 6.h),
+                              child: Text(
+                                reaction.reaction ?? '',
+                                style: TextStyle(fontSize: 28.sp),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
         ),
         if (state.phase == MeetingRoomPhase.reconnecting)
           Padding(
-            padding: EdgeInsets.only(bottom: 8.h),
+            padding: EdgeInsets.symmetric(vertical: 8.h),
             child: l10n.meetingCallWaitingHint
                 .s(12.sp)
                 .w(500)
-                .c(colors.textSub)
+                .c(AppColors.of(context).textSub)
                 .a(TextAlign.center),
           ),
-        _controls(context, state),
-        if (state.isHost && state.pendingRequests.isNotEmpty)
-          _pendingRequests(context, state),
+        SizedBox(height: 8.h),
+        MeetingCallControlBar(
+          microphoneOn: state.microphoneEnabled,
+          cameraOn: state.cameraEnabled,
+          handRaised: state.handRaised,
+          onMicrophone: () => context.read<MeetingRoomBloc>().add(
+            const MeetingRoomMicrophoneToggled(),
+          ),
+          onCamera: () => context.read<MeetingRoomBloc>().add(
+            const MeetingRoomCameraToggled(),
+          ),
+          onHand: () => context.read<MeetingRoomBloc>().add(
+            const MeetingRoomHandToggled(),
+          ),
+          onMore: () => _showMore(context, state),
+          onLeave: () => _showExit(context, state),
+          microphoneLabel: l10n.meetingCallMicrophone,
+          cameraLabel: l10n.meetingCallCamera,
+          handLabel: l10n.meetingCallRaiseHand,
+          moreLabel: l10n.meetingCallMore,
+          leaveLabel: l10n.meetingCallLeave,
+          onMicrophoneMenu: () => _showDevices(context, state),
+          onCameraMenu: () => _showCamera(context, state),
+        ),
       ],
     );
   }
 
-  Widget _controls(BuildContext context, MeetingRoomState state) {
+  Widget _speakerStage(
+    BuildContext context,
+    MeetingRoomState state,
+    LiveKitMediaService media,
+    int crossAxisCount,
+    bool compact,
+    AppLocalizations l10n,
+  ) {
     final colors = AppColors.of(context);
-    final l10n = AppLocalizations.of(context);
-    return MeetingPreviewSurface(
-      color: colors.cardSurface,
-      radius: 18.r,
-      child: Padding(
-        padding: EdgeInsets.all(10.w),
-        child: Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 8.w,
-          runSpacing: 8.h,
-          children: [
-            MeetingPreviewIconButton(
-              asset: state.microphoneEnabled
-                  ? Assets.icons.meetingMic
-                  : Assets.icons.meetingMicOff,
-              background: state.microphoneEnabled
-                  ? colors.backgroundElevation2
-                  : colors.errorStrong,
-              foreground: state.microphoneEnabled
-                  ? colors.iconStrong
-                  : colors.iconWhite,
-              semanticLabel: l10n.meetingCallMicrophone,
-              onTap: () => context.read<MeetingRoomBloc>().add(
-                const MeetingRoomMicrophoneToggled(),
-              ),
-            ),
-            MeetingPreviewIconButton(
-              asset: state.cameraEnabled
-                  ? Assets.icons.meetingVideo
-                  : Assets.icons.meetingVideoOff,
-              background: state.cameraEnabled
-                  ? colors.backgroundElevation2
-                  : colors.errorStrong,
-              foreground: state.cameraEnabled
-                  ? colors.iconStrong
-                  : colors.iconWhite,
-              semanticLabel: l10n.meetingCallCamera,
-              onTap: () => context.read<MeetingRoomBloc>().add(
-                const MeetingRoomCameraToggled(),
-              ),
-            ),
-            MeetingPreviewButton(
-              label: l10n.meetingCallLeave,
-              background: colors.errorStrong,
-              foreground: colors.textWhite,
-              icon: Assets.icons.meetingCallEnd,
-              onTap: () => context.read<MeetingRoomBloc>().add(
-                const MeetingRoomLeaveRequested(),
-              ),
-            ),
-            if (state.isHost)
-              MeetingPreviewButton(
-                label: l10n.meetingCallEndForEveryone,
-                background: colors.backgroundElevation2,
-                foreground: colors.errorStrong,
-                icon: Assets.icons.meetingPower,
-                onTap: () => _confirmEndMeeting(context),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _confirmEndMeeting(BuildContext context) async {
-    final l10n = AppLocalizations.of(context);
-    final shouldEnd = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.meetingCallEndForEveryone),
-        content: Text(l10n.meetingCallExitQuestion),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.meetingCallCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(l10n.meetingCallEndForEveryone),
-          ),
-        ],
-      ),
-    );
-    if (shouldEnd == true && context.mounted) {
-      context.read<MeetingRoomBloc>().add(const MeetingRoomEndRequested());
+    final remote = state.participants.where((p) => !p.isLocal).toList();
+    final screenParticipant = state.participants
+        .cast<MeetingRoomParticipant?>()
+        .firstWhere(
+          (participant) => participant?.screenSharing == true,
+          orElse: () => null,
+        );
+    if (screenParticipant != null) {
+      return _participantTile(
+        context,
+        screenParticipant,
+        media,
+        l10n,
+        meeting: state.meeting,
+        avatarSize: 56,
+        showMicrophone: true,
+        screenShare: true,
+      );
     }
+    if (remote.isEmpty) {
+      return ColoredBox(
+        color: colors.chartNeutral,
+        child: Center(
+          child: l10n.meetingCallParticipant.s(14.sp).w(500).c(colors.textSoft),
+        ),
+      );
+    }
+    final speaker = remote.firstWhere(
+      (participant) => participant.isSpeaking,
+      orElse: () => remote.first,
+    );
+    if (remote.length == 1) {
+      return _participantTile(
+        context,
+        speaker,
+        media,
+        l10n,
+        meeting: state.meeting,
+        avatarSize: 88,
+        avatarAlignment: Alignment.topCenter,
+        avatarPadding: EdgeInsets.only(top: compact ? 72.h : 128.h),
+        showMicrophone: false,
+        compactLabel: true,
+      );
+    }
+    return GridView.builder(
+      padding: EdgeInsets.all(8.w),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 10.w,
+        mainAxisSpacing: 10.h,
+        childAspectRatio: compact ? 1.2 : 1.35,
+      ),
+      itemCount: remote.length,
+      itemBuilder: (context, index) => _participantTile(
+        context,
+        remote[index],
+        media,
+        l10n,
+        meeting: state.meeting,
+        avatarSize: 56,
+        showMicrophone: true,
+      ),
+    );
   }
 
-  Widget _pendingRequests(BuildContext context, MeetingRoomState state) {
-    final colors = AppColors.of(context);
-    final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: EdgeInsets.only(top: 10.h),
-      child: MeetingPreviewSurface(
-        color: colors.cardSurface,
-        radius: 18.r,
-        child: Padding(
-          padding: EdgeInsets.all(12.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              l10n.meetingCallWantsToJoin.s(13.sp).w(700).c(colors.textStrong),
-              SizedBox(height: 8.h),
-              for (final request in state.pendingRequests)
-                Padding(
-                  padding: EdgeInsets.only(bottom: 8.h),
-                  child: Row(
-                    children: [
-                      TuiAvatar(
-                        initial: request.username,
-                        avatarUrl: request.avatar ?? '',
-                        size: 32,
-                      ),
-                      SizedBox(width: 8.w),
-                      Expanded(
-                        child: request.username
-                            .s(13.sp)
-                            .w(600)
-                            .c(colors.textStrong)
-                            .copyWith(
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                      ),
-                      TextButton(
-                        onPressed: () => context.read<MeetingRoomBloc>().add(
-                          MeetingRoomUserRejected(request.userId),
-                        ),
-                        child: l10n.meetingCallReject
-                            .s(12.sp)
-                            .w(600)
-                            .c(colors.errorStrong),
-                      ),
-                      TextButton(
-                        onPressed: () => context.read<MeetingRoomBloc>().add(
-                          MeetingRoomUserApproved(request.userId),
-                        ),
-                        child: l10n.meetingCallAllow
-                            .s(12.sp)
-                            .w(600)
-                            .c(colors.accentStrong),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-        ),
+  Widget _participantTile(
+    BuildContext context,
+    MeetingRoomParticipant participant,
+    LiveKitMediaService media,
+    AppLocalizations l10n, {
+    required Meeting? meeting,
+    required double avatarSize,
+    Color? backgroundColor,
+    required bool showMicrophone,
+    bool compactLabel = false,
+    bool screenShare = false,
+    Alignment avatarAlignment = Alignment.center,
+    EdgeInsets avatarPadding = EdgeInsets.zero,
+  }) {
+    final name = participant.isLocal ? l10n.meetingCallYou : participant.name;
+    return MeetingCallParticipantTile(
+      name: name,
+      isLocal: participant.isLocal,
+      microphoneOn: participant.microphoneEnabled,
+      cameraOn: screenShare
+          ? participant.screenSharing
+          : participant.cameraEnabled,
+      handRaised: participant.handRaised,
+      active: participant.isSpeaking,
+      track: media.videoTrackFor(
+        participant.identity,
+        screenShare: screenShare,
+      ),
+      avatarUrl: _avatarForParticipant(meeting, participant),
+      avatarSize: avatarSize,
+      backgroundColor: backgroundColor,
+      showMicrophone: showMicrophone,
+      compactLabel: compactLabel,
+      avatarAlignment: avatarAlignment,
+      avatarPadding: avatarPadding,
+    );
+  }
+
+  String _avatarForParticipant(
+    Meeting? meeting,
+    MeetingRoomParticipant participant,
+  ) {
+    for (final member in meeting?.participantsInfo ?? const []) {
+      if (member.username == participant.name ||
+          '${member.id}' == participant.identity) {
+        return member.avatar;
+      }
+    }
+    return '';
+  }
+
+  Widget _pendingRequestOverlay(BuildContext context, MeetingRoomState state) {
+    final request = state.pendingRequests.first;
+    return MeetingCallJoinRequest(
+      participantName: request.username,
+      avatarUrl: request.avatar ?? '',
+      onReject: () => context.read<MeetingRoomBloc>().add(
+        MeetingRoomUserRejected(request.userId),
+      ),
+      onAllow: () => context.read<MeetingRoomBloc>().add(
+        MeetingRoomUserApproved(request.userId),
       ),
     );
   }
@@ -440,166 +790,586 @@ class _MeetingRoomView extends StatelessWidget {
         ? l10n.meetingCallMeetingEndedTitle
         : l10n.meetingCallRequestSent;
     final message = state.errorMessage ?? l10n.meetingCallMeetingEndedHint;
-    return _scrollable(
-      children: [
-        _header(context, state.title, title),
-        SizedBox(height: 18.h),
-        MeetingPreviewSurface(
-          color: colors.cardSurface,
-          radius: 18.r,
-          child: Padding(
-            padding: EdgeInsets.all(24.w),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                message.s(15.sp).w(500).c(colors.textSub).a(TextAlign.center),
-                SizedBox(height: 20.h),
-                if (ended)
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        children: [
+          MeetingPreviewHeader(
+            title: state.title.isEmpty ? title : state.title,
+          ),
+          SizedBox(height: 18.h),
+          MeetingPreviewSurface(
+            color: colors.backgroundElevation1Alt,
+            radius: 18.r,
+            child: Padding(
+              padding: EdgeInsets.all(24.w),
+              child: Column(
+                children: [
+                  title.s(20.sp).w(800).c(colors.textStrong),
+                  SizedBox(height: 8.h),
+                  message.s(15.sp).w(500).c(colors.textSub).a(TextAlign.center),
+                  SizedBox(height: 20.h),
                   MeetingPreviewButton(
-                    label: l10n.meetingCallRejoin,
-                    background: colors.accentStrong,
-                    foreground: colors.textWhite,
-                    onTap: () => context.read<MeetingRoomBloc>().add(
-                      const MeetingRoomRetryRequested(),
-                    ),
-                  )
-                else
-                  MeetingPreviewButton(
-                    label: l10n.meetingCallJoin,
+                    label: ended
+                        ? l10n.meetingCallRejoin
+                        : l10n.meetingCallJoin,
                     background: colors.accentStrong,
                     foreground: colors.textWhite,
                     onTap: () => context.read<MeetingRoomBloc>().add(
                       const MeetingRoomRetryRequested(),
                     ),
                   ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _header(BuildContext context, String title, String status) {
-    final colors = AppColors.of(context);
-    return Row(
-      children: [
-        Expanded(
-          child: (title.isEmpty ? status : title)
-              .s(18.sp)
-              .w(700)
-              .c(colors.textStrong)
-              .copyWith(maxLines: 2, overflow: TextOverflow.ellipsis),
-        ),
-        SizedBox(width: 12.w),
-        Flexible(
-          child: status
-              .s(12.sp)
-              .w(600)
-              .c(colors.textSub)
-              .a(TextAlign.end)
-              .copyWith(maxLines: 1, overflow: TextOverflow.ellipsis),
-        ),
-      ],
-    );
-  }
-
-  Widget _selfPreview(BuildContext context, MeetingRoomState state) {
-    final colors = AppColors.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.backgroundElevation3,
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Center(
-        child: TuiAvatar(
-          initial: AppLocalizations.of(context).meetingCallYou,
-          size: 84,
-        ),
-      ),
-    );
-  }
-
-  Widget _scrollable({required List<Widget> children}) {
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: children,
-      ),
-    );
-  }
-}
-
-class _ParticipantTile extends StatelessWidget {
-  const _ParticipantTile({required this.participant});
-
-  final MeetingRoomParticipant participant;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-    final media = getIt.isRegistered<LiveKitMediaService>()
-        ? getIt<LiveKitMediaService>()
-        : null;
-    final track = media?.videoTrackFor(participant.identity);
-    return MeetingPreviewSurface(
-      color: colors.backgroundElevation3,
-      radius: 16.r,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: track != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(16.r),
-                    child: VideoTrackRenderer(track, fit: VideoViewFit.cover),
-                  )
-                : Center(child: TuiAvatar(initial: participant.name, size: 72)),
-          ),
-          Positioned(
-            left: 8.w,
-            right: 8.w,
-            bottom: 8.h,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: colors.black.withValues(alpha: 0.58),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child:
-                          (participant.isLocal
-                                  ? AppLocalizations.of(context).meetingCallYou
-                                  : participant.name)
-                              .s(12.sp)
-                              .w(600)
-                              .c(colors.textWhite)
-                              .copyWith(
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                    ),
-                    SizedBox(width: 6.w),
-                    (participant.microphoneEnabled
-                            ? Assets.icons.meetingMic
-                            : Assets.icons.meetingMicOff)
-                        .svg(
-                          width: 14.w,
-                          height: 14.w,
-                          colorFilter: ColorFilter.mode(
-                            colors.iconWhite,
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                  ],
-                ),
+                ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _showParticipants(
+    BuildContext context,
+    MeetingRoomState state,
+  ) async {
+    var query = '';
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.of(context).overlaySurface,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setState) => SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              20.w,
+              16.h,
+              20.w,
+              20.h + MediaQuery.viewInsetsOf(context).bottom,
+            ),
+            child: MeetingParticipantsSheet(
+              searchQuery: query,
+              onSearchChanged: (value) => setState(() => query = value),
+              participants: [
+                for (final participant in state.participants)
+                  MeetingParticipantItem(
+                    name: participant.isLocal
+                        ? AppLocalizations.of(context).meetingCallYou
+                        : participant.name,
+                    role: participant.isSpeaking
+                        ? AppLocalizations.of(context).meetingCallInMeeting
+                        : AppLocalizations.of(context).meetingCallParticipant,
+                    trailing: participant.handRaised
+                        ? Assets.icons.meetingHand.svg(
+                            width: 18.w,
+                            height: 18.w,
+                            colorFilter: ColorFilter.mode(
+                              AppColors.of(context).successStrong,
+                              BlendMode.srcIn,
+                            ),
+                          )
+                        : null,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showDetails(BuildContext context, MeetingRoomState state) {
+    final meeting = state.meeting;
+    final l10n = AppLocalizations.of(context);
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.of(context).overlaySurface,
+      builder: (context) => MeetingDetailsSheet(
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                l10n.meetingCallDetails
+                    .s(18.sp)
+                    .w(800)
+                    .c(AppColors.of(context).textStrong),
+                SizedBox(height: 12.h),
+                _detailRow(
+                  context,
+                  l10n.meetingCallOfficialUid,
+                  meeting?.uid.isNotEmpty == true
+                      ? meeting!.uid
+                      : l10n.meetingCallMeetingUid,
+                ),
+                _detailRow(
+                  context,
+                  l10n.meetingCallMeetingTopic,
+                  meeting?.title ?? state.title,
+                ),
+                _detailRow(
+                  context,
+                  l10n.meetingCallMeetingLink,
+                  meeting?.link.isNotEmpty == true
+                      ? meeting!.link
+                      : l10n.meetingCallDirectJoin,
+                ),
+                if (meeting?.startDate != null)
+                  _detailRow(
+                    context,
+                    l10n.meetingCallStartTime,
+                    meeting!.startDate!.toLocal().toString(),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _detailRow(BuildContext context, String label, String value) {
+    final colors = AppColors.of(context);
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 6.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: label.s(12.sp).w(500).c(colors.textSub)),
+          SizedBox(width: 12.w),
+          Flexible(
+            child: value
+                .s(13.sp)
+                .w(700)
+                .c(colors.textStrong)
+                .a(TextAlign.end)
+                .copyWith(maxLines: 3, overflow: TextOverflow.ellipsis),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showMore(BuildContext context, MeetingRoomState state) async {
+    final colors = AppColors.of(context);
+    final l10n = AppLocalizations.of(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: colors.overlaySurface,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _sheetAction(
+                  context,
+                  icon: Assets.icons.meetingScreen,
+                  label: l10n.meetingCallShareScreen,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _showScreenShare(context, state);
+                  },
+                ),
+                _sheetAction(
+                  context,
+                  icon: Assets.icons.meetingChat,
+                  label: l10n.meetingCallChat,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _showChat(context, state);
+                  },
+                ),
+                _sheetAction(
+                  context,
+                  icon: Assets.icons.meetingSticker,
+                  label: l10n.meetingCallStickers,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _showStickers(context);
+                  },
+                ),
+                _sheetAction(
+                  context,
+                  icon: Assets.icons.icUserGroup,
+                  label: l10n.meetingCallParticipants,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _showParticipants(context, state);
+                  },
+                ),
+                _sheetAction(
+                  context,
+                  icon: Assets.icons.meetingInfo,
+                  label: l10n.meetingCallDetails,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _showDetails(context, state);
+                  },
+                ),
+                _sheetAction(
+                  context,
+                  icon: Assets.icons.meetingPower,
+                  label: l10n.meetingCallLeave,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _showExit(context, state);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showChat(BuildContext context, MeetingRoomState state) async {
+    final bloc = context.read<MeetingRoomBloc>();
+    String? localIdentity;
+    for (final participant in state.participants) {
+      if (participant.isLocal) {
+        localIdentity = participant.identity;
+        break;
+      }
+    }
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.of(context).overlaySurface,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            20.w,
+            16.h,
+            20.w,
+            20.h + MediaQuery.viewInsetsOf(sheetContext).bottom,
+          ),
+          child: BlocProvider.value(
+            value: bloc,
+            child: BlocBuilder<MeetingRoomBloc, MeetingRoomState>(
+              builder: (context, current) {
+                final currentMessages = [
+                  for (final message in current.messages)
+                    if (message.text != null)
+                      message.senderIdentity == localIdentity
+                          ? message.text!
+                          : '${message.senderName}: ${message.text!}',
+                ];
+                return MeetingChatSheet(
+                  messages: currentMessages,
+                  onSend: (message) => context.read<MeetingRoomBloc>().add(
+                    MeetingRoomChatMessageSent(message),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showStickers(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.of(context).overlaySurface,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+          child: MeetingCallStickersPanel(
+            onSelected: (reaction) {
+              context.read<MeetingRoomBloc>().add(
+                MeetingRoomReactionSent(reaction),
+              );
+              Navigator.pop(sheetContext);
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showScreenShare(
+    BuildContext context,
+    MeetingRoomState state,
+  ) async {
+    final colors = AppColors.of(context);
+    final l10n = AppLocalizations.of(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: colors.overlaySurface,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              MeetingPreviewButton(
+                label: state.screenSharing
+                    ? l10n.meetingCallStopSharing
+                    : l10n.meetingCallShareScreen,
+                background: state.screenSharing
+                    ? colors.errorStrong
+                    : colors.accentStrong,
+                foreground: colors.textWhite,
+                icon: state.screenSharing
+                    ? Assets.icons.meetingCallEnd
+                    : Assets.icons.meetingScreen,
+                onTap: () {
+                  context.read<MeetingRoomBloc>().add(
+                    MeetingRoomScreenShareToggled(
+                      enabled: !state.screenSharing,
+                    ),
+                  );
+                  Navigator.pop(sheetContext);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showDevices(
+    BuildContext context,
+    MeetingRoomState state,
+  ) async {
+    final colors = AppColors.of(context);
+    final l10n = AppLocalizations.of(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: colors.overlaySurface,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                l10n.meetingCallMicrophoneSection
+                    .s(12.sp)
+                    .w(800)
+                    .c(colors.textSoft),
+                SizedBox(height: 8.h),
+                ..._deviceRows(
+                  context,
+                  state.audioInputs,
+                  state.selectedAudioInputId,
+                  (id) => MeetingRoomAudioInputSelected(id),
+                ),
+                SizedBox(height: 16.h),
+                l10n.meetingCallSpeakerSection
+                    .s(12.sp)
+                    .w(800)
+                    .c(colors.textSoft),
+                SizedBox(height: 8.h),
+                ..._deviceRows(
+                  context,
+                  state.audioOutputs,
+                  state.selectedAudioOutputId,
+                  (id) => MeetingRoomAudioOutputSelected(id),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showCamera(BuildContext context, MeetingRoomState state) async {
+    final colors = AppColors.of(context);
+    final l10n = AppLocalizations.of(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: colors.overlaySurface,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                l10n.meetingCallCameraSection
+                    .s(12.sp)
+                    .w(800)
+                    .c(colors.textSoft),
+                SizedBox(height: 8.h),
+                ..._deviceRows(
+                  context,
+                  state.videoInputs,
+                  state.selectedVideoInputId,
+                  (id) => MeetingRoomVideoInputSelected(id),
+                ),
+                SizedBox(height: 16.h),
+                _sheetAction(
+                  context,
+                  icon: Assets.icons.meetingVideo,
+                  label: l10n.meetingCallFrontCamera,
+                  onTap: () {
+                    context.read<MeetingRoomBloc>().add(
+                      MeetingRoomCameraPositionSelected(
+                        MeetingCameraPosition.front,
+                      ),
+                    );
+                    Navigator.pop(sheetContext);
+                  },
+                ),
+                _sheetAction(
+                  context,
+                  icon: Assets.icons.meetingVideo,
+                  label: l10n.meetingCallRearCamera,
+                  onTap: () {
+                    context.read<MeetingRoomBloc>().add(
+                      MeetingRoomCameraPositionSelected(
+                        MeetingCameraPosition.back,
+                      ),
+                    );
+                    Navigator.pop(sheetContext);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _deviceRows(
+    BuildContext context,
+    List<MeetingMediaDevice> devices,
+    String? selectedId,
+    MeetingRoomEvent Function(String id) eventBuilder,
+  ) {
+    final colors = AppColors.of(context);
+    if (devices.isEmpty) {
+      return [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.h),
+          child: AppLocalizations.of(
+            context,
+          ).meetingCallDeviceUnavailable.s(13.sp).w(500).c(colors.textSub),
+        ),
+      ];
+    }
+    return [
+      for (final device in devices)
+        _sheetAction(
+          context,
+          icon: Assets.icons.meetingMic,
+          label: device.label.isEmpty
+              ? AppLocalizations.of(context).meetingCallDefaultDevice
+              : device.label,
+          trailing: device.id == selectedId
+              ? Assets.icons.icCheck.svg(
+                  width: 18.w,
+                  height: 18.w,
+                  colorFilter: ColorFilter.mode(
+                    colors.accentStrong,
+                    BlendMode.srcIn,
+                  ),
+                )
+              : null,
+          onTap: () {
+            context.read<MeetingRoomBloc>().add(eventBuilder(device.id));
+            Navigator.pop(context);
+          },
+        ),
+    ];
+  }
+
+  Widget _sheetAction(
+    BuildContext context, {
+    required SvgGenImage icon,
+    required String label,
+    required VoidCallback onTap,
+    Widget? trailing,
+  }) {
+    final colors = AppColors.of(context);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        child: Row(
+          children: [
+            icon.svg(
+              width: 20.w,
+              height: 20.w,
+              colorFilter: ColorFilter.mode(colors.iconStrong, BlendMode.srcIn),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: label
+                  .s(14.sp)
+                  .w(700)
+                  .c(colors.textStrong)
+                  .copyWith(maxLines: 2, overflow: TextOverflow.ellipsis),
+            ),
+            if (trailing != null) ...[const Spacer(), trailing],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showExit(BuildContext context, MeetingRoomState state) async {
+    final colors = AppColors.of(context);
+    final l10n = AppLocalizations.of(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: colors.overlaySurface,
+      builder: (sheetContext) => MeetingExitSheet(
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                l10n.meetingCallExitQuestion
+                    .s(18.sp)
+                    .w(800)
+                    .c(colors.textStrong),
+                SizedBox(height: 16.h),
+                MeetingPreviewButton(
+                  label: l10n.meetingCallLeave,
+                  background: colors.errorStrong,
+                  foreground: colors.textWhite,
+                  icon: Assets.icons.meetingCallEnd,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    context.read<MeetingRoomBloc>().add(
+                      const MeetingRoomLeaveRequested(),
+                    );
+                  },
+                ),
+                if (state.isHost) ...[
+                  SizedBox(height: 10.h),
+                  MeetingPreviewButton(
+                    label: l10n.meetingCallEndForEveryone,
+                    background: colors.backgroundElevation2,
+                    foreground: colors.errorStrong,
+                    icon: Assets.icons.meetingPower,
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      context.read<MeetingRoomBloc>().add(
+                        const MeetingRoomEndRequested(),
+                      );
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -8,9 +8,6 @@ class MeetingCallStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16.r),
-      child: SizedBox.expand(child: child),
-    );
+    return ClipRRect(borderRadius: BorderRadius.circular(16.r), child: child);
   }
 }

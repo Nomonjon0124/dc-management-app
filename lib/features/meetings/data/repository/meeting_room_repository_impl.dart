@@ -55,6 +55,36 @@ class MeetingRoomRepositoryImpl implements MeetingRoomRepository {
       _media.setCameraEnabled(enabled);
 
   @override
+  Future<void> setHandRaised(bool raised) => _media.setHandRaised(raised);
+
+  @override
+  Future<void> sendChatMessage(String message) =>
+      _media.sendChatMessage(message);
+
+  @override
+  Future<void> sendReaction(String reaction) => _media.sendReaction(reaction);
+
+  @override
+  Future<void> setScreenShareEnabled(bool enabled) =>
+      _media.setScreenShareEnabled(enabled);
+
+  @override
+  Future<void> setAudioInputDevice(String deviceId) =>
+      _media.setAudioInputDevice(deviceId);
+
+  @override
+  Future<void> setAudioOutputDevice(String deviceId) =>
+      _media.setAudioOutputDevice(deviceId);
+
+  @override
+  Future<void> setVideoInputDevice(String deviceId) =>
+      _media.setVideoInputDevice(deviceId);
+
+  @override
+  Future<void> setCameraPosition(MeetingCameraPosition position) =>
+      _media.setCameraPosition(position);
+
+  @override
   Future<void> close() async {
     await _media.disconnect();
     await _realtime.close();

@@ -40,6 +40,7 @@ class MeetingCreateBloc extends Bloc<MeetingCreateEvent, MeetingCreateState> {
        super(const MeetingCreateState()) {
     on<MeetingCreateOptionsRequested>(_onRequested);
     on<MeetingCreateProjectSelected>(_onProjectSelected);
+    on<MeetingCreateParticipantsRequested>(_onParticipantsRequested);
     on<MeetingDetailRequested>(_onDetailRequested);
     on<MeetingCreateSubmitted>(_onSubmitted);
     on<MeetingUpdateSubmitted>(_onUpdateSubmitted);
@@ -85,9 +86,23 @@ class MeetingCreateBloc extends Bloc<MeetingCreateEvent, MeetingCreateState> {
     MeetingCreateProjectSelected event,
     Emitter<MeetingCreateState> emit,
   ) async {
+    await _loadMembers(event.projectId, emit);
+  }
+
+  Future<void> _onParticipantsRequested(
+    MeetingCreateParticipantsRequested event,
+    Emitter<MeetingCreateState> emit,
+  ) async {
+    await _loadMembers(event.projectId, emit);
+  }
+
+  Future<void> _loadMembers(
+    int projectId,
+    Emitter<MeetingCreateState> emit,
+  ) async {
     emit(state.copyWith(membersLoading: true, members: const []));
     try {
-      final members = await _getMembers(event.projectId);
+      final members = await _getMembers(projectId);
       emit(state.copyWith(membersLoading: false, members: members));
     } on Failure catch (_) {
       emit(state.copyWith(membersLoading: false));

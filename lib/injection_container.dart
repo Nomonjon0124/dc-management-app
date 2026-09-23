@@ -332,7 +332,11 @@ Future<void> configureDependencies() async {
       () => MeetingRoomRepositoryImpl(realtime: getIt(), media: getIt()),
     )
     ..registerFactory<MeetingRoomBloc>(
-      () => MeetingRoomBloc(repository: getIt(), closeMeeting: getIt()),
+      () => MeetingRoomBloc(
+        repository: getIt(),
+        closeMeeting: getIt(),
+        getMeeting: getIt(),
+      ),
     );
 
   // ── Tasks feature ─────────────────────────────────────────────────────

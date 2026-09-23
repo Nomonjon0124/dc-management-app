@@ -23,7 +23,11 @@ enum MeetingMediaEventType {
   participantsChanged,
   localMediaChanged,
   failure,
+  dataReceived,
+  devicesChanged,
 }
+
+enum MeetingCameraPosition { front, back }
 
 class MeetingRoomToken extends Equatable {
   const MeetingRoomToken({
@@ -50,6 +54,9 @@ class MeetingRoomParticipant extends Equatable {
     required this.cameraEnabled,
     this.audioTrackSid,
     this.videoTrackSid,
+    this.screenShareTrackSid,
+    this.handRaised = false,
+    this.screenSharing = false,
   });
 
   final String identity;
@@ -60,6 +67,9 @@ class MeetingRoomParticipant extends Equatable {
   final bool cameraEnabled;
   final String? audioTrackSid;
   final String? videoTrackSid;
+  final String? screenShareTrackSid;
+  final bool handRaised;
+  final bool screenSharing;
 
   @override
   List<Object?> get props => [
@@ -71,6 +81,40 @@ class MeetingRoomParticipant extends Equatable {
     cameraEnabled,
     audioTrackSid,
     videoTrackSid,
+    screenShareTrackSid,
+    handRaised,
+    screenSharing,
+  ];
+}
+
+class MeetingRoomDataMessage extends Equatable {
+  const MeetingRoomDataMessage({
+    required this.type,
+    required this.senderIdentity,
+    required this.senderName,
+    this.text,
+    this.reaction,
+    this.raised,
+    this.sentAt,
+  });
+
+  final String type;
+  final String senderIdentity;
+  final String senderName;
+  final String? text;
+  final String? reaction;
+  final bool? raised;
+  final DateTime? sentAt;
+
+  @override
+  List<Object?> get props => [
+    type,
+    senderIdentity,
+    senderName,
+    text,
+    reaction,
+    raised,
+    sentAt,
   ];
 }
 
@@ -148,6 +192,10 @@ class MeetingMediaEvent extends Equatable {
     this.microphoneEnabled,
     this.cameraEnabled,
     this.message,
+    this.dataMessage,
+    this.audioInputs = const [],
+    this.audioOutputs = const [],
+    this.videoInputs = const [],
   });
 
   final MeetingMediaEventType type;
@@ -155,6 +203,10 @@ class MeetingMediaEvent extends Equatable {
   final bool? microphoneEnabled;
   final bool? cameraEnabled;
   final String? message;
+  final MeetingRoomDataMessage? dataMessage;
+  final List<MeetingMediaDevice> audioInputs;
+  final List<MeetingMediaDevice> audioOutputs;
+  final List<MeetingMediaDevice> videoInputs;
 
   @override
   List<Object?> get props => [
@@ -163,5 +215,24 @@ class MeetingMediaEvent extends Equatable {
     microphoneEnabled,
     cameraEnabled,
     message,
+    dataMessage,
+    audioInputs,
+    audioOutputs,
+    videoInputs,
   ];
+}
+
+class MeetingMediaDevice extends Equatable {
+  const MeetingMediaDevice({
+    required this.id,
+    required this.label,
+    required this.kind,
+  });
+
+  final String id;
+  final String label;
+  final String kind;
+
+  @override
+  List<Object?> get props => [id, label, kind];
 }

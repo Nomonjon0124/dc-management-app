@@ -1712,6 +1712,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get meetingCallChat => 'Chat';
 
   @override
+  String get meetingCallFeatureUnavailable =>
+      'This feature is not available yet.';
+
+  @override
   String get meetingCallClose => 'Close';
 
   @override
@@ -1743,6 +1747,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get meetingCallShareScreen => 'Share screen';
 
   @override
+  String get meetingCallScreenShareError =>
+      'Unable to share your screen. Please try again.';
+
+  @override
   String get meetingCallStickers => 'Stickers';
 
   @override
@@ -1753,6 +1761,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get meetingCallSpeakerSection => 'SPEAKER';
+
+  @override
+  String get meetingCallDeviceUnavailable => 'No device found';
+
+  @override
+  String get meetingCallDefaultDevice => 'Default device';
 
   @override
   String get meetingCallIphoneMicrophone => 'iPhone microphone';

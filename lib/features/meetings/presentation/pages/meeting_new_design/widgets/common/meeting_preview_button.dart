@@ -13,6 +13,11 @@ class MeetingPreviewButton extends StatelessWidget {
     required this.onTap,
     this.icon,
     this.outlined = false,
+    this.height,
+    this.iconSize,
+    this.textSize,
+    this.textWeight = 800,
+    this.borderColor,
   });
 
   final String label;
@@ -21,26 +26,31 @@ class MeetingPreviewButton extends StatelessWidget {
   final VoidCallback onTap;
   final SvgGenImage? icon;
   final bool outlined;
+  final double? height;
+  final double? iconSize;
+  final double? textSize;
+  final int textWeight;
+  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
     final content = SizedBox(
-      height: 54.h,
+      height: height ?? 54.h,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (icon != null) ...[
             icon!.svg(
-              width: 18.w,
-              height: 18.w,
+              width: iconSize ?? 18.w,
+              height: iconSize ?? 18.w,
               colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn),
             ),
             SizedBox(width: 8.w),
           ],
           Flexible(
             child: label
-                .s(15.sp)
-                .w(800)
+                .s(textSize ?? 15.sp)
+                .w(textWeight)
                 .c(foreground)
                 .a(TextAlign.center)
                 .copyWith(maxLines: 2, overflow: TextOverflow.ellipsis),
@@ -51,7 +61,9 @@ class MeetingPreviewButton extends StatelessWidget {
     final decoration = BoxDecoration(
       color: outlined ? Colors.transparent : background,
       borderRadius: BorderRadius.circular(12.r),
-      border: outlined ? Border.all(color: foreground, width: 1.w) : null,
+      border: outlined || borderColor != null
+          ? Border.all(color: borderColor ?? foreground, width: 1.w)
+          : null,
     );
     return InkWell(
       onTap: onTap,

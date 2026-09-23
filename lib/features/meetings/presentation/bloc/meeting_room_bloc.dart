@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/meeting_room.dart';
 import '../../domain/repository/meeting_room_repository.dart';
 import '../../domain/usecases/close_meeting_usecase.dart';
+import '../../domain/usecases/get_meeting_usecase.dart';
 import 'meeting_room_event.dart';
 import 'meeting_room_state.dart';
 
@@ -12,8 +13,10 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
   MeetingRoomBloc({
     required MeetingRoomRepository repository,
     required CloseMeetingUseCase closeMeeting,
+    required GetMeetingUseCase getMeeting,
   }) : _repository = repository,
        _closeMeeting = closeMeeting,
+       _getMeeting = getMeeting,
        super(const MeetingRoomState()) {
     on<MeetingRoomStarted>(_onStarted);
     on<MeetingRoomJoinRequested>(_onJoinRequested);
@@ -25,6 +28,14 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     on<MeetingRoomRetryRequested>(_onRetryRequested);
     on<MeetingRoomMicrophoneToggled>(_onMicrophoneToggled);
     on<MeetingRoomCameraToggled>(_onCameraToggled);
+    on<MeetingRoomHandToggled>(_onHandToggled);
+    on<MeetingRoomChatMessageSent>(_onChatMessageSent);
+    on<MeetingRoomReactionSent>(_onReactionSent);
+    on<MeetingRoomScreenShareToggled>(_onScreenShareToggled);
+    on<MeetingRoomAudioInputSelected>(_onAudioInputSelected);
+    on<MeetingRoomAudioOutputSelected>(_onAudioOutputSelected);
+    on<MeetingRoomVideoInputSelected>(_onVideoInputSelected);
+    on<MeetingRoomCameraPositionSelected>(_onCameraPositionSelected);
     _realtimeSubscription = _repository.events.listen(
       (message) => add(_RealtimeMessageReceived(message)),
     );
@@ -37,6 +48,7 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
 
   final MeetingRoomRepository _repository;
   final CloseMeetingUseCase _closeMeeting;
+  final GetMeetingUseCase _getMeeting;
   StreamSubscription<MeetingRealtimeMessage>? _realtimeSubscription;
   StreamSubscription<MeetingMediaEvent>? _mediaSubscription;
   bool _joinRequested = false;
@@ -50,7 +62,25 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     Emitter<MeetingRoomState> emit,
   ) async {
     if (state.meetingId == event.meetingId) return;
-    emit(state.copyWith(meetingId: event.meetingId, clearError: true));
+    final initial = event.initialMeeting;
+    emit(
+      state.copyWith(
+        meetingId: event.meetingId,
+        meeting: initial,
+        title: initial?.title ?? '',
+        clearError: true,
+      ),
+    );
+    if (initial != null) return;
+    try {
+      final meeting = await _getMeeting(event.meetingId);
+      if (state.meetingId == event.meetingId) {
+        emit(state.copyWith(meeting: meeting, title: meeting.title));
+      }
+    } on Object {
+      // The realtime `meeting_state` event remains the source of truth for
+      // room admission. The room can still open if the detail lookup fails.
+    }
   }
 
   Future<void> _onJoinRequested(
@@ -200,6 +230,225 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     } on Object catch (error) {
       emit(state.copyWith(errorMessage: error.toString()));
     }
+  }
+
+  Future<void> _onHandToggled(
+    MeetingRoomHandToggled event,
+    Emitter<MeetingRoomState> emit,
+  ) async {
+    if (state.phase != MeetingRoomPhase.connected &&
+        state.phase != MeetingRoomPhase.reconnecting) {
+      return;
+    }
+    final raised = !state.handRaised;
+    try {
+      await _repository.setHandRaised(raised);
+      emit(
+        state.copyWith(
+          handRaised: raised,
+          participants: _withLocalHand(state.participants, raised),
+        ),
+      );
+    } on Object catch (error) {
+      emit(state.copyWith(errorMessage: error.toString()));
+    }
+  }
+
+  Future<void> _onChatMessageSent(
+    MeetingRoomChatMessageSent event,
+    Emitter<MeetingRoomState> emit,
+  ) async {
+    final message = event.message.trim();
+    if (message.isEmpty) return;
+    try {
+      await _repository.sendChatMessage(message);
+      final local = _localParticipant(state.participants);
+      emit(
+        state.copyWith(
+          messages: [
+            ...state.messages,
+            MeetingRoomDataMessage(
+              type: 'chat',
+              senderIdentity: local?.identity ?? 'local',
+              senderName: local?.name ?? 'Siz',
+              text: message,
+              sentAt: DateTime.now(),
+            ),
+          ],
+        ),
+      );
+    } on Object catch (error) {
+      emit(state.copyWith(errorMessage: error.toString()));
+    }
+  }
+
+  Future<void> _onReactionSent(
+    MeetingRoomReactionSent event,
+    Emitter<MeetingRoomState> emit,
+  ) async {
+    try {
+      await _repository.sendReaction(event.reaction);
+      final local = _localParticipant(state.participants);
+      final reaction = MeetingRoomDataMessage(
+        type: 'reaction',
+        senderIdentity: local?.identity ?? 'local',
+        senderName: local?.name ?? 'Siz',
+        reaction: event.reaction,
+        sentAt: DateTime.now(),
+      );
+      emit(
+        state.copyWith(
+          reactions: [...state.reactions, reaction].take(3).toList(),
+        ),
+      );
+    } on Object catch (error) {
+      emit(state.copyWith(errorMessage: error.toString()));
+    }
+  }
+
+  Future<void> _onScreenShareToggled(
+    MeetingRoomScreenShareToggled event,
+    Emitter<MeetingRoomState> emit,
+  ) async {
+    try {
+      await _repository.setScreenShareEnabled(event.enabled);
+      emit(state.copyWith(screenSharing: event.enabled, clearError: true));
+    } on Object {
+      emit(
+        state.copyWith(
+          screenSharing: false,
+          error: MeetingRoomError.screenShareFailed,
+        ),
+      );
+    }
+  }
+
+  Future<void> _onAudioInputSelected(
+    MeetingRoomAudioInputSelected event,
+    Emitter<MeetingRoomState> emit,
+  ) async {
+    try {
+      await _repository.setAudioInputDevice(event.deviceId);
+      emit(state.copyWith(selectedAudioInputId: event.deviceId));
+    } on Object catch (error) {
+      emit(state.copyWith(errorMessage: error.toString()));
+    }
+  }
+
+  Future<void> _onAudioOutputSelected(
+    MeetingRoomAudioOutputSelected event,
+    Emitter<MeetingRoomState> emit,
+  ) async {
+    try {
+      await _repository.setAudioOutputDevice(event.deviceId);
+      emit(state.copyWith(selectedAudioOutputId: event.deviceId));
+    } on Object catch (error) {
+      emit(state.copyWith(errorMessage: error.toString()));
+    }
+  }
+
+  Future<void> _onVideoInputSelected(
+    MeetingRoomVideoInputSelected event,
+    Emitter<MeetingRoomState> emit,
+  ) async {
+    try {
+      await _repository.setVideoInputDevice(event.deviceId);
+      emit(state.copyWith(selectedVideoInputId: event.deviceId));
+    } on Object catch (error) {
+      emit(state.copyWith(errorMessage: error.toString()));
+    }
+  }
+
+  Future<void> _onCameraPositionSelected(
+    MeetingRoomCameraPositionSelected event,
+    Emitter<MeetingRoomState> emit,
+  ) async {
+    try {
+      await _repository.setCameraPosition(event.position);
+    } on Object catch (error) {
+      emit(state.copyWith(errorMessage: error.toString()));
+    }
+  }
+
+  List<MeetingRoomParticipant> _withLocalHand(
+    List<MeetingRoomParticipant> participants,
+    bool raised,
+  ) => [
+    for (final participant in participants)
+      participant.isLocal
+          ? MeetingRoomParticipant(
+              identity: participant.identity,
+              name: participant.name,
+              isLocal: participant.isLocal,
+              isSpeaking: participant.isSpeaking,
+              microphoneEnabled: participant.microphoneEnabled,
+              cameraEnabled: participant.cameraEnabled,
+              audioTrackSid: participant.audioTrackSid,
+              videoTrackSid: participant.videoTrackSid,
+              screenShareTrackSid: participant.screenShareTrackSid,
+              handRaised: raised,
+              screenSharing: participant.screenSharing,
+            )
+          : participant,
+  ];
+
+  List<MeetingRoomParticipant> _withRemoteHand(
+    List<MeetingRoomParticipant> participants,
+    String identity,
+    bool raised,
+  ) => [
+    for (final participant in participants)
+      participant.identity == identity
+          ? MeetingRoomParticipant(
+              identity: participant.identity,
+              name: participant.name,
+              isLocal: participant.isLocal,
+              isSpeaking: participant.isSpeaking,
+              microphoneEnabled: participant.microphoneEnabled,
+              cameraEnabled: participant.cameraEnabled,
+              audioTrackSid: participant.audioTrackSid,
+              videoTrackSid: participant.videoTrackSid,
+              screenShareTrackSid: participant.screenShareTrackSid,
+              handRaised: raised,
+              screenSharing: participant.screenSharing,
+            )
+          : participant,
+  ];
+
+  MeetingRoomParticipant? _localParticipant(
+    List<MeetingRoomParticipant> participants,
+  ) {
+    for (final participant in participants) {
+      if (participant.isLocal) return participant;
+    }
+    return null;
+  }
+
+  List<MeetingRoomParticipant> _preserveParticipantFlags(
+    List<MeetingRoomParticipant> participants,
+  ) {
+    final previous = <String, MeetingRoomParticipant>{
+      for (final participant in state.participants)
+        participant.identity: participant,
+    };
+    return [
+      for (final participant in participants)
+        previous[participant.identity] == null
+            ? participant
+            : MeetingRoomParticipant(
+                identity: participant.identity,
+                name: participant.name,
+                isLocal: participant.isLocal,
+                isSpeaking: participant.isSpeaking,
+                microphoneEnabled: participant.microphoneEnabled,
+                cameraEnabled: participant.cameraEnabled,
+                audioTrackSid: participant.audioTrackSid,
+                videoTrackSid: participant.videoTrackSid,
+                screenShareTrackSid: participant.screenShareTrackSid,
+                handRaised: previous[participant.identity]!.handRaised,
+                screenSharing: participant.screenSharing,
+              ),
+    ];
   }
 
   Future<void> _onRealtimeMessage(
@@ -357,22 +606,30 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     switch (media.type) {
       case MeetingMediaEventType.connected:
       case MeetingMediaEventType.reconnected:
+        final participants = _preserveParticipantFlags(media.participants);
+        final local = _localParticipant(participants);
         emit(
           state.copyWith(
             phase: MeetingRoomPhase.connected,
-            participants: media.participants,
+            participants: participants,
             microphoneEnabled: media.microphoneEnabled,
             cameraEnabled: media.cameraEnabled,
+            handRaised: local?.handRaised ?? state.handRaised,
+            screenSharing: local?.screenSharing ?? state.screenSharing,
             clearError: true,
           ),
         );
       case MeetingMediaEventType.participantsChanged:
       case MeetingMediaEventType.localMediaChanged:
+        final participants = _preserveParticipantFlags(media.participants);
+        final local = _localParticipant(participants);
         emit(
           state.copyWith(
-            participants: media.participants,
+            participants: participants,
             microphoneEnabled: media.microphoneEnabled,
             cameraEnabled: media.cameraEnabled,
+            handRaised: local?.handRaised ?? state.handRaised,
+            screenSharing: local?.screenSharing ?? state.screenSharing,
           ),
         );
       case MeetingMediaEventType.reconnecting:
@@ -387,6 +644,36 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
           state.copyWith(
             phase: MeetingRoomPhase.failure,
             errorMessage: media.message,
+          ),
+        );
+      case MeetingMediaEventType.dataReceived:
+        final data = media.dataMessage;
+        if (data == null) return;
+        if (data.type == 'chat' && data.text?.trim().isNotEmpty == true) {
+          emit(state.copyWith(messages: [...state.messages, data]));
+        } else if (data.type == 'reaction' && data.reaction != null) {
+          emit(
+            state.copyWith(
+              reactions: [...state.reactions, data].take(3).toList(),
+            ),
+          );
+        } else if (data.type == 'hand_raise' && data.raised != null) {
+          emit(
+            state.copyWith(
+              participants: _withRemoteHand(
+                state.participants,
+                data.senderIdentity,
+                data.raised!,
+              ),
+            ),
+          );
+        }
+      case MeetingMediaEventType.devicesChanged:
+        emit(
+          state.copyWith(
+            audioInputs: media.audioInputs,
+            audioOutputs: media.audioOutputs,
+            videoInputs: media.videoInputs,
           ),
         );
     }

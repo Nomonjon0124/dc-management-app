@@ -17,6 +17,7 @@ class MeetingCallTopBar extends StatelessWidget {
     required this.onParticipantsTap,
     required this.endLabel,
     required this.stickerLabel,
+    this.showSticker = true,
   });
 
   final String title;
@@ -27,12 +28,13 @@ class MeetingCallTopBar extends StatelessWidget {
   final VoidCallback onParticipantsTap;
   final String endLabel;
   final String stickerLabel;
+  final bool showSticker;
 
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 8.h, 16.w, 8.h),
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 16.w, 12.h),
       child: Row(
         children: [
           Expanded(
@@ -69,16 +71,18 @@ class MeetingCallTopBar extends StatelessWidget {
             size: 32.w,
             iconSize: 18.w,
           ),
-          SizedBox(width: 8.w),
-          MeetingPreviewIconButton(
-            asset: Assets.icons.meetingSticker,
-            background: colors.backgroundElevation2,
-            foreground: colors.iconStrong,
-            onTap: onStickerTap,
-            semanticLabel: stickerLabel,
-            size: 32.w,
-            iconSize: 18.w,
-          ),
+          if (showSticker) ...[
+            SizedBox(width: 8.w),
+            MeetingPreviewIconButton(
+              asset: Assets.icons.meetingSticker,
+              background: colors.backgroundElevation2,
+              foreground: colors.iconStrong,
+              onTap: onStickerTap,
+              semanticLabel: stickerLabel,
+              size: 32.w,
+              iconSize: 18.w,
+            ),
+          ],
           SizedBox(width: 8.w),
           InkWell(
             onTap: onParticipantsTap,

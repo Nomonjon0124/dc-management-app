@@ -1717,6 +1717,10 @@ class AppLocalizationsUz extends AppLocalizations {
   String get meetingCallChat => 'Chat';
 
   @override
+  String get meetingCallFeatureUnavailable =>
+      'Bu funksiya hozircha mavjud emas.';
+
+  @override
   String get meetingCallClose => 'Yopish';
 
   @override
@@ -1748,6 +1752,10 @@ class AppLocalizationsUz extends AppLocalizations {
   String get meetingCallShareScreen => 'Ekranni ulashish';
 
   @override
+  String get meetingCallScreenShareError =>
+      'Ekran ulashib bo‘lmadi. Iltimos, qayta urinib ko‘ring.';
+
+  @override
   String get meetingCallStickers => 'Stikerlar';
 
   @override
@@ -1758,6 +1766,12 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get meetingCallSpeakerSection => 'DINAMIK';
+
+  @override
+  String get meetingCallDeviceUnavailable => 'Qurilma topilmadi';
+
+  @override
+  String get meetingCallDefaultDevice => 'Standart qurilma';
 
   @override
   String get meetingCallIphoneMicrophone => 'iPhone mikrofoni';

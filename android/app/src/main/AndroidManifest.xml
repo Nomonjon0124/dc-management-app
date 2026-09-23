@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <!-- Android 13+ push bildirishnomalari uchun -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -45,6 +46,11 @@
             android:name=".MeetingAudioForegroundService"
             android:exported="false"
             android:foregroundServiceType="microphone|mediaPlayback" />
+        <service
+            android:name=".MeetingScreenShareForegroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" />
         <!-- FCM: foreground lokal bildirishnoma kanali bilan bir xil id
              (PushNotificationService’dagi `high_importance_channel`). -->
         <meta-data

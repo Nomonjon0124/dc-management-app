@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../config/routes/entity/routes.dart';
 import '../../../../config/theme/app_colors.dart';
@@ -38,8 +37,8 @@ enum _Field { none, project }
 /// Yig'ilish qo'shish/tahrirlash formasi. [initial] berilsa tahrirlash
 /// rejimi: maydonlar ro'yxatdagi [Meeting]dan to'ldiriladi, saqlash `PUT`
 /// yuboradi (toggle yoqilsa va yig'ilish ochiq bo'lsa keyin yopiladi).
-/// [readOnly] — tafsilotlar rejimi: forma o'zgartirib bo'lmaydi, saqlash
-/// paneli yashirin, havola bosilganda tashqi brauzerda ochiladi.
+/// [readOnly] — tafsilotlar rejimi: forma o'zgartirib bo'lmaydi, detail
+/// amallari esa pastdagi production tugmalari orqali boshqariladi.
 class MeetingCreatePage extends StatelessWidget {
   const MeetingCreatePage({
     super.key,
@@ -106,7 +105,6 @@ class _MeetingCreateView extends StatefulWidget {
 
 class _MeetingCreateViewState extends State<_MeetingCreateView> {
   final _nameCtrl = TextEditingController();
-  final _linkCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _penaltyCtrl = TextEditingController();
   final _durationCtrl = TextEditingController();
@@ -140,6 +138,14 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
     return m.participantsInfo.any((p) => p.id == organizerId);
   }
 
+  bool get _canSaveDetail {
+    final m = _meeting;
+    return widget.readOnly &&
+        m != null &&
+        m.organizerId != null &&
+        m.organizerId == _currentUserId;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -148,12 +154,18 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
     // yuklangach id bo'yicha moslanadi (build'dagi BlocListener).
     _meeting = widget.initial;
     final m = _meeting;
-    if (m != null) _applyMeeting(m);
+    if (m != null) {
+      _applyMeeting(m);
+    } else if (!widget.readOnly) {
+      // The design shows a ready-to-submit date/time row. Keep the date
+      // current while preserving the backend's explicit midnight default.
+      _date = DateTime.now();
+      _time = const TimeOfDay(hour: 0, minute: 0);
+    }
   }
 
   void _applyMeeting(Meeting m) {
     _nameCtrl.text = m.title;
-    _linkCtrl.text = m.link;
     _descCtrl.text = m.description;
     _penaltyCtrl.text = _intPart(m.penaltyPercentage ?? '');
     _durationCtrl.text = m.durationMinutes?.toString() ?? '';
@@ -189,7 +201,6 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _linkCtrl.dispose();
     _descCtrl.dispose();
     _penaltyCtrl.dispose();
     _durationCtrl.dispose();
@@ -247,13 +258,25 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
       AppToast.showError(context, title: l10n.taskCreateSelectProjectFirst);
       return;
     }
-    if (state.membersLoading) return;
+    final bloc = context.read<MeetingCreateBloc>();
+    if (state.membersLoading) {
+      await bloc.stream.firstWhere((next) => !next.membersLoading);
+    }
+    if (!mounted) return;
+
+    if (bloc.state.members.isEmpty) {
+      bloc.add(MeetingCreateParticipantsRequested(_project!.id));
+      await bloc.stream.firstWhere((next) => !next.membersLoading);
+    }
+    if (!mounted) return;
+
+    final members = bloc.state.members;
     final result = await context.pushNamed<Object?>(
       Routes.taskMultiSelect.name,
       extra: TaskMultiSelectArgs(
         title: l10n.meetingCreateParticipantsTitle,
         items: [
-          for (final member in state.members)
+          for (final member in members)
             MultiSelectItem(
               id: member.id,
               initial: member.username,
@@ -277,30 +300,6 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
   /// Tafsilotlar rejimida maydonni o'zgartirishdan to'sadi.
   Widget _ro(Widget child) =>
       widget.readOnly ? AbsorbPointer(child: child) : child;
-
-  /// Havolani tashqi brauzerda ochadi (sxema yo'q bo'lsa `https://` qo'shiladi).
-  Future<void> _openLink() async {
-    var url = _linkCtrl.text.trim();
-    if (url.isEmpty) return;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://$url';
-    }
-    final uri = Uri.tryParse(url);
-    var launched = false;
-    if (uri != null) {
-      try {
-        launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } on Object {
-        launched = false;
-      }
-    }
-    if (!launched && mounted) {
-      AppToast.showError(
-        context,
-        title: AppLocalizations.of(context).commonError,
-      );
-    }
-  }
 
   /// Yakunlash sheet'i: qatnashganlar belgilanadi, tasdiqda bloc'ga yuboriladi.
   Future<void> _openCloseSheet() async {
@@ -333,7 +332,6 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
     // bo'lsa null ketadi.
     if ((_project == null && !_isEdit) ||
         _nameCtrl.text.trim().isEmpty ||
-        _linkCtrl.text.trim().isEmpty ||
         _descCtrl.text.trim().isEmpty ||
         _date == null ||
         duration == null) {
@@ -356,7 +354,6 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
       project: _project?.id,
       title: _nameCtrl.text.trim(),
       description: _descCtrl.text.trim(),
-      link: _linkCtrl.text.trim(),
       penaltyPercentage: penalty.isEmpty ? null : penalty,
       startTime: startTime,
       durationMinutes: duration,
@@ -517,19 +514,6 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
                                     controller: _penaltyCtrl,
                                     keyboardType: TextInputType.number,
                                     inputFormatters: [_MaxValueFormatter(100)],
-                                  ),
-                                ),
-                                // Tafsilotlar rejimida havola bosilganda ochiladi.
-                                GestureDetector(
-                                  onTap: widget.readOnly ? _openLink : null,
-                                  child: AbsorbPointer(
-                                    absorbing: widget.readOnly,
-                                    child: _InputField(
-                                      label: l10n.meetingCreateLink,
-                                      hint: l10n.meetingCreateLinkHint,
-                                      controller: _linkCtrl,
-                                      keyboardType: TextInputType.url,
-                                    ),
                                   ),
                                 ),
                                 _ro(
@@ -721,6 +705,7 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
                           onTap: () => context.pushNamed(
                             Routes.meetingRoom.name,
                             pathParameters: {'id': '${_meeting!.id}'},
+                            extra: _meeting,
                           ),
                         ),
                       if (!widget.readOnly)
@@ -774,6 +759,15 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (widget.readOnly) ...[
+                          _MeetingStatusPill(
+                            label: (_meeting?.isCompleted ?? false)
+                                ? l10n.projectStatusCompleted
+                                : l10n.meetingPreviewActive,
+                            completed: _meeting?.isCompleted ?? false,
+                          ),
+                          SizedBox(height: 12.h),
+                        ],
                         MeetingPreviewSelectField(
                           label: l10n.taskCreateFieldProject,
                           value: _project?.title,
@@ -790,27 +784,6 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
                           readOnly: widget.readOnly,
                         ),
                         SizedBox(height: 12.h),
-                        GestureDetector(
-                          onTap: widget.readOnly ? _openLink : null,
-                          child: AbsorbPointer(
-                            absorbing: widget.readOnly,
-                            child: MeetingPreviewField(
-                              label: l10n.meetingCreateLink,
-                              hint: l10n.meetingCreateLinkHint,
-                              controller: _linkCtrl,
-                              readOnly: widget.readOnly,
-                              keyboardType: TextInputType.url,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 12.h),
-                        MeetingPreviewTextArea(
-                          label: l10n.taskCreateFieldDescription,
-                          hint: l10n.meetingCreateDescriptionHint,
-                          controller: _descCtrl,
-                          readOnly: widget.readOnly,
-                        ),
-                        SizedBox(height: 12.h),
                         MeetingPreviewField(
                           label: l10n.taskCreateFieldPenalty,
                           hint: l10n.meetingCreatePenaltyHint,
@@ -818,6 +791,20 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
                           readOnly: widget.readOnly,
                           keyboardType: TextInputType.number,
                           inputFormatters: [_MaxValueFormatter(100)],
+                        ),
+                        SizedBox(height: 12.h),
+                        _NewApprovalCard(
+                          enabled: _requiresApproval,
+                          readOnly: widget.readOnly,
+                          onChanged: (value) =>
+                              setState(() => _requiresApproval = value),
+                        ),
+                        SizedBox(height: 12.h),
+                        MeetingPreviewTextArea(
+                          label: l10n.taskCreateFieldDescription,
+                          hint: l10n.meetingCreateDescriptionHint,
+                          controller: _descCtrl,
+                          readOnly: widget.readOnly,
                         ),
                         SizedBox(height: 12.h),
                         LayoutBuilder(
@@ -861,16 +848,10 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
                           controller: _durationCtrl,
                           readOnly: widget.readOnly,
                           keyboardType: TextInputType.number,
+                          trailingIcon: Assets.icons.icTuilconChervonDown,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
                           ],
-                        ),
-                        SizedBox(height: 12.h),
-                        _NewApprovalCard(
-                          enabled: _requiresApproval,
-                          readOnly: widget.readOnly,
-                          onChanged: (value) =>
-                              setState(() => _requiresApproval = value),
                         ),
                         SizedBox(height: 12.h),
                         MeetingPreviewParticipantsField(
@@ -888,14 +869,6 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
                               ? () {}
                               : () => _openParticipants(state),
                         ),
-                        if (!widget.readOnly) ...[
-                          SizedBox(height: 12.h),
-                          _NewCompletionCard(
-                            completed: _completed,
-                            onChanged: (value) =>
-                                setState(() => _completed = value),
-                          ),
-                        ],
                         if (widget.readOnly &&
                             (_meeting?.isCompleted ?? false) &&
                             state.myAttendance != null) ...[
@@ -958,8 +931,20 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
                             onTap: () => context.pushNamed(
                               Routes.meetingRoom.name,
                               pathParameters: {'id': '${_meeting!.id}'},
+                              extra: _meeting,
                             ),
                           ),
+                        if (_canSaveDetail) ...[
+                          SizedBox(height: 12.h),
+                          MeetingPreviewButton(
+                            label: l10n.meetingPreviewSave,
+                            background: colors.backgroundBase,
+                            foreground: colors.textStrong,
+                            outlined: true,
+                            icon: Assets.icons.icTuilconCheck,
+                            onTap: () => Navigator.of(context).maybePop(),
+                          ),
+                        ],
                         if (widget.readOnly && _canClose) ...[
                           if (_meeting?.id != null &&
                               !(_meeting?.isCompleted ?? true))
@@ -1209,30 +1194,34 @@ class _NewApprovalCard extends StatelessWidget {
   }
 }
 
-class _NewCompletionCard extends StatelessWidget {
-  const _NewCompletionCard({required this.completed, required this.onChanged});
+class _MeetingStatusPill extends StatelessWidget {
+  const _MeetingStatusPill({required this.label, required this.completed});
 
+  final String label;
   final bool completed;
-  final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.cardSurface,
-        borderRadius: BorderRadius.circular(12.r),
+        color: colors.backgroundElevation2,
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: AppLocalizations.of(
-                context,
-              ).meetingCreateCompleted.s(14.sp).w(700).c(colors.textStrong),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: completed ? colors.iconSub : colors.successSub,
+                shape: BoxShape.circle,
+              ),
+              child: SizedBox(width: 7.w, height: 7.w),
             ),
-            _SmallSwitch(value: completed, enabled: true, onChanged: onChanged),
+            SizedBox(width: 6.w),
+            label.s(13.sp).w(700).h(18 / 13).c(colors.textStrong),
           ],
         ),
       ),

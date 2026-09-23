@@ -3416,6 +3416,12 @@ abstract class AppLocalizations {
   /// **'Chat'**
   String get meetingCallChat;
 
+  /// No description provided for @meetingCallFeatureUnavailable.
+  ///
+  /// In uz, this message translates to:
+  /// **'Bu funksiya hozircha mavjud emas.'**
+  String get meetingCallFeatureUnavailable;
+
   /// No description provided for @meetingCallClose.
   ///
   /// In uz, this message translates to:
@@ -3476,6 +3482,12 @@ abstract class AppLocalizations {
   /// **'Ekranni ulashish'**
   String get meetingCallShareScreen;
 
+  /// No description provided for @meetingCallScreenShareError.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ekran ulashib bo‘lmadi. Iltimos, qayta urinib ko‘ring.'**
+  String get meetingCallScreenShareError;
+
   /// No description provided for @meetingCallStickers.
   ///
   /// In uz, this message translates to:
@@ -3499,6 +3511,18 @@ abstract class AppLocalizations {
   /// In uz, this message translates to:
   /// **'DINAMIK'**
   String get meetingCallSpeakerSection;
+
+  /// No description provided for @meetingCallDeviceUnavailable.
+  ///
+  /// In uz, this message translates to:
+  /// **'Qurilma topilmadi'**
+  String get meetingCallDeviceUnavailable;
+
+  /// No description provided for @meetingCallDefaultDevice.
+  ///
+  /// In uz, this message translates to:
+  /// **'Standart qurilma'**
+  String get meetingCallDefaultDevice;
 
   /// No description provided for @meetingCallIphoneMicrophone.
   ///

@@ -21,5 +21,21 @@ abstract interface class MeetingRoomRepository {
 
   Future<void> setCameraEnabled(bool enabled);
 
+  Future<void> setHandRaised(bool raised);
+
+  Future<void> sendChatMessage(String message);
+
+  Future<void> sendReaction(String reaction);
+
+  Future<void> setScreenShareEnabled(bool enabled);
+
+  Future<void> setAudioInputDevice(String deviceId);
+
+  Future<void> setAudioOutputDevice(String deviceId);
+
+  Future<void> setVideoInputDevice(String deviceId);
+
+  Future<void> setCameraPosition(MeetingCameraPosition position);
+
   Future<void> close();
 }

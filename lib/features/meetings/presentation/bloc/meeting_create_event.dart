@@ -20,6 +20,18 @@ class MeetingCreateProjectSelected extends MeetingCreateEvent {
   List<Object?> get props => [projectId];
 }
 
+/// Participant picker ochilishidan oldin tanlangan loyiha a'zolarini qayta
+/// olish. Bu event page'ga kirishda ro'yxat eskirib qolgan bo'lsa ham
+/// participantlar listini to'liq ko'rsatishni kafolatlaydi.
+class MeetingCreateParticipantsRequested extends MeetingCreateEvent {
+  const MeetingCreateParticipantsRequested(this.projectId);
+
+  final int projectId;
+
+  @override
+  List<Object?> get props => [projectId];
+}
+
 /// Tafsilotlarni yuklash (`GET /meetings/{id}/`) — detail rejimida forma
 /// to'liq ma'lumot bilan yangilanadi (ro'yxat payload'i to'liq bo'lmasligi
 /// mumkin).

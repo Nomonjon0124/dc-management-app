@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/extentions/text_extensions.dart';
@@ -20,6 +19,7 @@ import 'widgets/common/meeting_preview_button.dart';
 import 'widgets/common/meeting_preview_icon_button.dart';
 import 'widgets/common/meeting_preview_surface.dart';
 import 'widgets/call/meeting_call_stickers_panel.dart';
+import 'widgets/call/meeting_call_control_bar.dart';
 import 'widgets/call/meeting_call_participant_tile.dart';
 import 'widgets/call/meeting_call_join_request.dart';
 import 'widgets/sheets/meeting_chat_sheet.dart';
@@ -669,143 +669,23 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
   }
 
   Widget _controlBar() {
-    final colors = AppColors.of(context);
     final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: LiquidGlassLens(
-        style: LiquidGlassStyle(
-          shape: LiquidGlassShape.continuousRoundedRectangle(
-            cornerRadius: 999.r,
-            borderWidth: 1,
-            borderColor: colors.white.withValues(alpha: 0.72),
-          ),
-          appearance: LiquidGlassAppearance(
-            color: colors.white.withValues(alpha: 0.76),
-            blur: const LiquidGlassBlur(sigmaX: 14, sigmaY: 14),
-            shadow: LiquidGlassShadow(
-              blur: 18,
-              opacity: 0.12,
-              offset: const Offset(0, 6),
-              color: colors.textStrong,
-            ),
-          ),
-          refraction: const LiquidGlassRefraction(
-            distortion: 0.06,
-            distortionWidth: 18,
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(12.w),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _barButton(
-                _micOn ? Assets.icons.meetingMic : Assets.icons.meetingMicOff,
-                64.w,
-                () => _bloc.add(const MeetingCallMicrophoneToggled()),
-                l10n.meetingCallMicrophone,
-                dangerous: !_micOn,
-                caret: true,
-                caretOnTap: () => _showSheet(_Sheet.devices),
-              ),
-              _barButton(
-                _cameraOn
-                    ? Assets.icons.meetingVideo
-                    : Assets.icons.meetingVideoOff,
-                64.w,
-                () => _bloc.add(const MeetingCallCameraToggled()),
-                l10n.meetingCallCamera,
-                dangerous: !_cameraOn,
-                caret: true,
-                caretOnTap: () => _showSheet(_Sheet.camera),
-              ),
-              _barButton(
-                Assets.icons.meetingHand,
-                48.w,
-                () => _bloc.add(const MeetingCallHandToggled()),
-                l10n.meetingCallRaiseHand,
-                selected: _handRaised,
-              ),
-              _barButton(
-                Assets.icons.icMoreVertical,
-                48.w,
-                () => _showSheet(_Sheet.more),
-                l10n.meetingCallMore,
-              ),
-              _barButton(
-                Assets.icons.meetingCallEnd,
-                70.w,
-                () => _showSheet(_Sheet.exit),
-                l10n.meetingCallLeave,
-                dangerous: true,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _barButton(
-    SvgGenImage asset,
-    double width,
-    VoidCallback onTap,
-    String label, {
-    bool dangerous = false,
-    bool selected = false,
-    bool caret = false,
-    VoidCallback? caretOnTap,
-  }) {
-    final colors = AppColors.of(context);
-    final foreground = dangerous || selected
-        ? colors.iconWhite
-        : colors.iconStrong;
-    return Semantics(
-      button: true,
-      label: label,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(999.r),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: dangerous
-                ? colors.errorStrong
-                : selected
-                ? colors.accentStrong
-                : colors.backgroundElevation2,
-            borderRadius: BorderRadius.circular(999.r),
-          ),
-          child: SizedBox(
-            width: width,
-            height: 44.h,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _icon(asset, foreground, 20.w),
-                if (caret) ...[
-                  SizedBox(width: 5.w),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: colors.textSoft.withValues(alpha: 0.35),
-                    ),
-                    child: SizedBox(width: 1.w, height: 16.h),
-                  ),
-                  SizedBox(width: 5.w),
-                  InkWell(
-                    onTap: caretOnTap,
-                    borderRadius: BorderRadius.circular(999.r),
-                    child: RotatedBox(
-                      quarterTurns: 3,
-                      child: _icon(Assets.icons.icArrowRight, foreground, 12.w),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
+    return MeetingCallControlBar(
+      microphoneOn: _micOn,
+      cameraOn: _cameraOn,
+      handRaised: _handRaised,
+      onMicrophone: () => _bloc.add(const MeetingCallMicrophoneToggled()),
+      onCamera: () => _bloc.add(const MeetingCallCameraToggled()),
+      onHand: () => _bloc.add(const MeetingCallHandToggled()),
+      onMore: () => _showSheet(_Sheet.more),
+      onLeave: () => _showSheet(_Sheet.exit),
+      microphoneLabel: l10n.meetingCallMicrophone,
+      cameraLabel: l10n.meetingCallCamera,
+      handLabel: l10n.meetingCallRaiseHand,
+      moreLabel: l10n.meetingCallMore,
+      leaveLabel: l10n.meetingCallLeave,
+      onMicrophoneMenu: () => _showSheet(_Sheet.devices),
+      onCameraMenu: () => _showSheet(_Sheet.camera),
     );
   }
 

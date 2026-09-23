@@ -119,6 +119,9 @@ class AppColors extends ThemeExtension<AppColors> {
   /// "Rad etildi" holati nuqtasi (qizil).
   final Color taskStatusRejected;
 
+  /// Connected meeting room'dagi self tile foni.
+  final Color meetingLocalTile;
+
   // ── Daily plans ─────────────────────────────────────────────────────────
   final Color dailyPlanRed;
   final Color dailyPlanYellow;
@@ -209,6 +212,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.taskStatusProduction,
     required this.taskStatusChecked,
     required this.taskStatusRejected,
+    required this.meetingLocalTile,
     required this.dailyPlanRed,
     required this.dailyPlanYellow,
     required this.dailyPlanGreen,
@@ -286,6 +290,7 @@ class AppColors extends ThemeExtension<AppColors> {
     taskStatusProduction: Color(0xFF43A047),
     taskStatusChecked: Color(0xFFFB8C00),
     taskStatusRejected: Color(0xFFE53935),
+    meetingLocalTile: Color(0xFF0F111C),
     dailyPlanRed: Color(0xFFEF161E),
     dailyPlanYellow: Color(0xFFFFD702),
     dailyPlanGreen: Color(0xFF2DBE2C),
@@ -363,6 +368,7 @@ class AppColors extends ThemeExtension<AppColors> {
     taskStatusProduction: Color(0xFF43A047),
     taskStatusChecked: Color(0xFFFB8C00),
     taskStatusRejected: Color(0xFFE53935),
+    meetingLocalTile: Color(0xFF0F111C),
     dailyPlanRed: Color(0xFFEF161E),
     dailyPlanYellow: Color(0xFFFFD702),
     dailyPlanGreen: Color(0xFF2DBE2C),
@@ -478,6 +484,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? taskStatusProduction,
     Color? taskStatusChecked,
     Color? taskStatusRejected,
+    Color? meetingLocalTile,
     Color? dailyPlanRed,
     Color? dailyPlanYellow,
     Color? dailyPlanGreen,
@@ -556,6 +563,7 @@ class AppColors extends ThemeExtension<AppColors> {
     taskStatusProduction: taskStatusProduction ?? this.taskStatusProduction,
     taskStatusChecked: taskStatusChecked ?? this.taskStatusChecked,
     taskStatusRejected: taskStatusRejected ?? this.taskStatusRejected,
+    meetingLocalTile: meetingLocalTile ?? this.meetingLocalTile,
     dailyPlanRed: dailyPlanRed ?? this.dailyPlanRed,
     dailyPlanYellow: dailyPlanYellow ?? this.dailyPlanYellow,
     dailyPlanGreen: dailyPlanGreen ?? this.dailyPlanGreen,
@@ -690,6 +698,11 @@ class AppColors extends ThemeExtension<AppColors> {
       taskStatusRejected: Color.lerp(
         taskStatusRejected,
         other.taskStatusRejected,
+        t,
+      )!,
+      meetingLocalTile: Color.lerp(
+        meetingLocalTile,
+        other.meetingLocalTile,
         t,
       )!,
       dailyPlanRed: Color.lerp(dailyPlanRed, other.dailyPlanRed, t)!,

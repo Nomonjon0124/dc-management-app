@@ -448,6 +448,9 @@ class AppRouter {
           path: Routes.meetingRoom.path,
           builder: (context, state) => MeetingRoomPage(
             meetingId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
+            initialMeeting: state.extra is Meeting
+                ? state.extra! as Meeting
+                : null,
           ),
         ),
         GoRoute(

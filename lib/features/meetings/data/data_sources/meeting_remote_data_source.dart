@@ -287,7 +287,6 @@ class MeetingRemoteDataSourceImpl implements MeetingRemoteDataSource {
     'project': form.project,
     'title': form.title,
     'description': form.description,
-    'link': form.link,
     if (form.penaltyPercentage != null)
       'penalty_percentage': form.penaltyPercentage,
     'start_time': form.startTime.toIso8601String(),

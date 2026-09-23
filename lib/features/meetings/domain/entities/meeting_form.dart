@@ -1,10 +1,14 @@
 /// Full request body for `POST /meetings/` and `PUT /meetings/{id}/`.
+///
+/// Meeting links are not client-managed. The backend generates the meeting
+/// UID/room when the record is created, so [link] remains only as a
+/// backwards-compatible value for old callers and is omitted from requests.
 class MeetingForm {
   const MeetingForm({
     this.project,
     required this.title,
     required this.description,
-    required this.link,
+    this.link = '',
     this.penaltyPercentage,
     required this.startTime,
     required this.durationMinutes,

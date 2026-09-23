@@ -2,6 +2,7 @@ package raqamli.nazorat.dc_management_app
 
 import android.content.Intent
 import android.os.Build
+import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -26,6 +27,36 @@ class MainActivity : FlutterFragmentActivity() {
 
                 "stop" -> {
                     stopService(Intent(this, MeetingAudioForegroundService::class.java))
+                    result.success(null)
+                }
+
+                "startScreenShareForegroundService" -> {
+                    MeetingScreenShareForegroundService.pendingStartResult = result
+                    try {
+                        val intent = Intent(
+                            this,
+                            MeetingScreenShareForegroundService::class.java,
+                        )
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            ContextCompat.startForegroundService(this, intent)
+                        } else {
+                            startService(intent)
+                        }
+                    } catch (error: Throwable) {
+                        MeetingScreenShareForegroundService.pendingStartResult = null
+                        result.error(
+                            "SCREEN_SHARE_FOREGROUND_SERVICE_START_FAILED",
+                            error.message,
+                            null,
+                        )
+                    }
+                }
+
+                "stopScreenShareForegroundService" -> {
+                    MeetingScreenShareForegroundService.pendingStartResult = null
+                    stopService(
+                        Intent(this, MeetingScreenShareForegroundService::class.java),
+                    )
                     result.success(null)
                 }
 
