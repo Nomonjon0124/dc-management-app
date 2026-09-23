@@ -1040,32 +1040,19 @@ class _MeetingRoomView extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.of(context).overlaySurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
       builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            20.w,
-            16.h,
-            20.w,
-            20.h + MediaQuery.viewInsetsOf(sheetContext).bottom,
-          ),
-          child: BlocProvider.value(
-            value: bloc,
-            child: BlocBuilder<MeetingRoomBloc, MeetingRoomState>(
-              builder: (context, current) {
-                final currentMessages = [
-                  for (final message in current.messages)
-                    if (message.text != null)
-                      message.senderIdentity == localIdentity
-                          ? message.text!
-                          : '${message.senderName}: ${message.text!}',
-                ];
-                return MeetingChatSheet(
-                  messages: currentMessages,
-                  onSend: (message) => context.read<MeetingRoomBloc>().add(
-                    MeetingRoomChatMessageSent(message),
-                  ),
-                );
-              },
+        child: BlocProvider.value(
+          value: bloc,
+          child: BlocBuilder<MeetingRoomBloc, MeetingRoomState>(
+            builder: (context, current) => MeetingChatSheet(
+              messages: current.messages,
+              localIdentity: localIdentity,
+              onSend: (message) => context.read<MeetingRoomBloc>().add(
+                MeetingRoomChatMessageSent(message),
+              ),
             ),
           ),
         ),

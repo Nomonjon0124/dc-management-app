@@ -11,6 +11,7 @@ import '../../../../../core/extentions/text_extensions.dart';
 import '../../../../../core/gen/assets.gen.dart';
 import '../../../../../l10n/app_localizations.dart';
 import '../../../../../injection_container.dart';
+import '../../../domain/entities/meeting_room.dart';
 import '../../bloc/meeting_new_design/meeting_call_preview_bloc.dart';
 import '../../bloc/meeting_new_design/meeting_call_preview_event.dart';
 import '../../bloc/meeting_new_design/meeting_call_preview_state.dart';
@@ -704,67 +705,69 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
-      builder: (sheetContext) => SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            20.w,
-            10.h,
-            20.w,
-            20.h + MediaQuery.viewInsetsOf(sheetContext).bottom,
-          ),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.9,
+      builder: (sheetContext) {
+        if (sheet == _Sheet.chat) return _chatContent();
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              20.w,
+              10.h,
+              20.w,
+              20.h + MediaQuery.viewInsetsOf(sheetContext).bottom,
             ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: colors.backgroundElevation2Alt,
-                      borderRadius: BorderRadius.circular(2.r),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.9,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: colors.backgroundElevation2Alt,
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                      child: SizedBox(width: 36.w, height: 4.h),
                     ),
-                    child: SizedBox(width: 36.w, height: 4.h),
-                  ),
-                  SizedBox(height: 14.h),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _sheetTitle(
-                          sheet,
-                          l10n,
-                        ).s(17.sp).w(800).c(colors.textStrong),
-                      ),
-                      _circleAction(
-                        Assets.icons.icClose,
-                        colors.backgroundElevation2,
-                        colors.iconStrong,
-                        () => Navigator.pop(sheetContext),
-                        l10n.meetingCallClose,
-                        size: 32.w,
-                        iconSize: 18.w,
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 14.h),
-                  if (sheet == _Sheet.participants) _participantsContent(),
-                  if (sheet == _Sheet.chat) _chatContent(),
-                  if (sheet == _Sheet.more) _moreContent(sheetContext),
-                  if (sheet == _Sheet.devices) _devicesContent(),
-                  if (sheet == _Sheet.exit)
-                    _exitContent(sheetContext, includeEndForEveryone),
-                  if (sheet == _Sheet.details) _detailsContent(),
-                  if (sheet == _Sheet.shareScreen)
-                    _shareScreenContent(sheetContext),
-                  if (sheet == _Sheet.camera) _cameraContent(),
-                ],
+                    SizedBox(height: 14.h),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _sheetTitle(
+                            sheet,
+                            l10n,
+                          ).s(17.sp).w(800).c(colors.textStrong),
+                        ),
+                        _circleAction(
+                          Assets.icons.icClose,
+                          colors.backgroundElevation2,
+                          colors.iconStrong,
+                          () => Navigator.pop(sheetContext),
+                          l10n.meetingCallClose,
+                          size: 32.w,
+                          iconSize: 18.w,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 14.h),
+                    if (sheet == _Sheet.participants) _participantsContent(),
+                    if (sheet == _Sheet.more) _moreContent(sheetContext),
+                    if (sheet == _Sheet.devices) _devicesContent(),
+                    if (sheet == _Sheet.exit)
+                      _exitContent(sheetContext, includeEndForEveryone),
+                    if (sheet == _Sheet.details) _detailsContent(),
+                    if (sheet == _Sheet.shareScreen)
+                      _shareScreenContent(sheetContext),
+                    if (sheet == _Sheet.camera) _cameraContent(),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
     if (mounted) _bloc.add(const MeetingCallSheetClosed());
   }
@@ -1434,7 +1437,17 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
   }
 
   Widget _chatContent() => MeetingChatSheet(
-    messages: _messages,
+    messages: [
+      for (final message in _messages)
+        MeetingRoomDataMessage(
+          type: 'chat',
+          senderIdentity: 'local',
+          senderName: '',
+          text: message,
+          sentAt: DateTime.now(),
+        ),
+    ],
+    localIdentity: 'local',
     onSend: (message) => _bloc.add(MeetingCallChatMessageSent(message)),
   );
 

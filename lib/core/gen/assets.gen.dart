@@ -211,6 +211,10 @@ class $AssetsIconsGen {
   SvgGenImage get icUserGroup =>
       const SvgGenImage('assets/icons/ic_user_group.svg');
 
+  /// File path: assets/icons/meeting_add.svg
+  SvgGenImage get meetingAdd =>
+      const SvgGenImage('assets/icons/meeting_add.svg');
+
   /// File path: assets/icons/meeting_call_end.svg
   SvgGenImage get meetingCallEnd =>
       const SvgGenImage('assets/icons/meeting_call_end.svg');
@@ -321,6 +325,7 @@ class $AssetsIconsGen {
     icTuilconTime,
     icUser,
     icUserGroup,
+    meetingAdd,
     meetingCallEnd,
     meetingChat,
     meetingCopy,
