@@ -227,6 +227,18 @@ class $AssetsIconsGen {
   SvgGenImage get meetingCopy =>
       const SvgGenImage('assets/icons/meeting_copy.svg');
 
+  /// File path: assets/icons/meeting_ended_check.svg
+  SvgGenImage get meetingEndedCheck =>
+      const SvgGenImage('assets/icons/meeting_ended_check.svg');
+
+  /// File path: assets/icons/meeting_ended_home.svg
+  SvgGenImage get meetingEndedHome =>
+      const SvgGenImage('assets/icons/meeting_ended_home.svg');
+
+  /// File path: assets/icons/meeting_ended_refresh.svg
+  SvgGenImage get meetingEndedRefresh =>
+      const SvgGenImage('assets/icons/meeting_ended_refresh.svg');
+
   /// File path: assets/icons/meeting_hand.svg
   SvgGenImage get meetingHand =>
       const SvgGenImage('assets/icons/meeting_hand.svg');
@@ -329,6 +341,9 @@ class $AssetsIconsGen {
     meetingCallEnd,
     meetingChat,
     meetingCopy,
+    meetingEndedCheck,
+    meetingEndedHome,
+    meetingEndedRefresh,
     meetingHand,
     meetingInfo,
     meetingJoin,

@@ -21,6 +21,7 @@ import 'meeting_new_design/widgets/call/meeting_call_stage.dart';
 import 'meeting_new_design/widgets/call/meeting_call_stickers_panel.dart';
 import 'meeting_new_design/widgets/call/meeting_call_top_bar.dart';
 import 'meeting_new_design/widgets/common/meeting_preview_button.dart';
+import 'meeting_new_design/widgets/common/meeting_ended_result.dart';
 import 'meeting_new_design/widgets/common/meeting_preview_icon_button.dart';
 import 'meeting_new_design/widgets/common/meeting_preview_surface.dart';
 import 'meeting_new_design/widgets/form/meeting_preview_header.dart';
@@ -786,9 +787,19 @@ class _MeetingRoomView extends StatelessWidget {
     final ended =
         state.phase == MeetingRoomPhase.ended ||
         state.phase == MeetingRoomPhase.left;
-    final title = ended
-        ? l10n.meetingCallMeetingEndedTitle
-        : l10n.meetingCallRequestSent;
+    if (ended) {
+      return MeetingEndedResult(
+        title: l10n.meetingCallMeetingEndedTitle,
+        message: l10n.meetingCallMeetingEndedHint,
+        rejoinLabel: l10n.meetingCallRejoin,
+        homeLabel: l10n.meetingCallHome,
+        onRejoin: () => context.read<MeetingRoomBloc>().add(
+          const MeetingRoomRetryRequested(),
+        ),
+        onHome: () => Navigator.of(context).maybePop(),
+      );
+    }
+    final title = l10n.meetingCallRequestSent;
     final message = state.errorMessage ?? l10n.meetingCallMeetingEndedHint;
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),

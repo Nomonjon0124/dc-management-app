@@ -17,6 +17,7 @@ import '../../bloc/meeting_new_design/meeting_call_preview_event.dart';
 import '../../bloc/meeting_new_design/meeting_call_preview_state.dart';
 import 'widgets/common/meeting_preview_avatar.dart';
 import 'widgets/common/meeting_preview_button.dart';
+import 'widgets/common/meeting_ended_result.dart';
 import 'widgets/common/meeting_preview_icon_button.dart';
 import 'widgets/common/meeting_preview_surface.dart';
 import 'widgets/call/meeting_call_stickers_panel.dart';
@@ -95,7 +96,7 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
               builder: (context, constraints) => _phase == _Phase.call
                   ? _callBody(constraints)
                   : _phase == _Phase.ended
-                  ? _endedBody(constraints)
+                  ? _endedBody()
                   : _prejoinBody(constraints),
             ),
           ),
@@ -104,64 +105,15 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
     );
   }
 
-  Widget _endedBody(BoxConstraints constraints) {
-    final colors = AppColors.of(context);
+  Widget _endedBody() {
     final l10n = AppLocalizations.of(context);
-    return Center(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 40.w),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 310.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _surface(
-                color: colors.backgroundElevation2Alt,
-                radius: 999.r,
-                child: SizedBox(
-                  width: 64.w,
-                  height: 64.w,
-                  child: Center(
-                    child: _icon(
-                      Assets.icons.icCheckmarkCircle,
-                      colors.accentStrong,
-                      30.w,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 14.h),
-              l10n.meetingCallMeetingEndedTitle
-                  .s(20.sp)
-                  .w(800)
-                  .c(colors.textStrong)
-                  .a(TextAlign.center),
-              SizedBox(height: 8.h),
-              l10n.meetingCallMeetingEndedHint
-                  .s(15.sp)
-                  .w(500)
-                  .c(colors.textSub)
-                  .a(TextAlign.center),
-              SizedBox(height: 18.h),
-              _wideButton(
-                l10n.meetingCallRejoin,
-                colors.accentStrong,
-                colors.textWhite,
-                () => _bloc.add(const MeetingCallApproved()),
-                icon: Assets.icons.icArrowRight,
-              ),
-              SizedBox(height: 10.h),
-              _wideButton(
-                l10n.meetingCallHome,
-                colors.backgroundElevation2,
-                colors.textStrong,
-                () => Navigator.of(context).maybePop(),
-                icon: Assets.icons.icDashboardSquare,
-              ),
-            ],
-          ),
-        ),
-      ),
+    return MeetingEndedResult(
+      title: l10n.meetingCallMeetingEndedTitle,
+      message: l10n.meetingCallMeetingEndedHint,
+      rejoinLabel: l10n.meetingCallRejoin,
+      homeLabel: l10n.meetingCallHome,
+      onRejoin: () => _bloc.add(const MeetingCallApproved()),
+      onHome: () => Navigator.of(context).maybePop(),
     );
   }
 
