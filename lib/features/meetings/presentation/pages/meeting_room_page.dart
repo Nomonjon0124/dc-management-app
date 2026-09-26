@@ -33,6 +33,7 @@ import 'meeting_new_design/widgets/sheets/meeting_details_sheet.dart';
 import 'meeting_new_design/widgets/sheets/meeting_exit_sheet.dart';
 import 'meeting_new_design/widgets/sheets/meeting_chat_sheet.dart';
 import 'meeting_new_design/widgets/sheets/meeting_participants_sheet.dart';
+import '../widgets/meeting_live_reaction_overlay.dart';
 
 /// Production meeting room. The meeting WebSocket and LiveKit remain owned by
 /// [MeetingRoomBloc]; this page only renders the Figma-aligned UI for its state.
@@ -675,24 +676,12 @@ class _MeetingRoomView extends StatelessWidget {
                         ),
                       ),
                     ),
-                  if (state.reactions.isNotEmpty)
-                    Positioned(
-                      left: 20.w,
-                      top: 28.h,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          for (final reaction in state.reactions)
-                            Padding(
-                              padding: EdgeInsets.only(bottom: 6.h),
-                              child: Text(
-                                reaction.reaction ?? '',
-                                style: TextStyle(fontSize: 28.sp),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
+                  MeetingLiveReactionOverlay(
+                    reactions: state.reactions,
+                    onExpired: (reactionId) => context
+                        .read<MeetingRoomBloc>()
+                        .add(MeetingRoomReactionExpired(reactionId)),
+                  ),
                 ],
               ),
             ),

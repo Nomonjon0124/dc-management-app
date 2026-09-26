@@ -31,6 +31,7 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     on<MeetingRoomHandToggled>(_onHandToggled);
     on<MeetingRoomChatMessageSent>(_onChatMessageSent);
     on<MeetingRoomReactionSent>(_onReactionSent);
+    on<MeetingRoomReactionExpired>(_onReactionExpired);
     on<MeetingRoomParticipantMuted>(_onParticipantMuted);
     on<MeetingRoomUnmuteRequested>(_onUnmuteRequested);
     on<MeetingRoomUnmuteResponseSent>(_onUnmuteResponseSent);
@@ -291,22 +292,23 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
   ) async {
     try {
       await _repository.sendReaction(event.reaction);
-      final local = _localParticipant(state.participants);
-      final reaction = MeetingRoomDataMessage(
-        type: 'reaction',
-        senderIdentity: local?.identity ?? 'local',
-        senderName: local?.name ?? 'Siz',
-        reaction: event.reaction,
-        sentAt: DateTime.now(),
-      );
-      emit(
-        state.copyWith(
-          reactions: [...state.reactions, reaction].take(3).toList(),
-        ),
-      );
     } on Object catch (error) {
       emit(state.copyWith(errorMessage: error.toString()));
     }
+  }
+
+  void _onReactionExpired(
+    MeetingRoomReactionExpired event,
+    Emitter<MeetingRoomState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        reactions: [
+          for (final reaction in state.reactions)
+            if (reaction.id != event.reactionId) reaction,
+        ],
+      ),
+    );
   }
 
   Future<void> _onParticipantMuted(
@@ -662,6 +664,7 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
         if (message.reaction?.isNotEmpty == true) {
           final reaction = MeetingRoomDataMessage(
             type: 'reaction',
+            id: _reactionId(),
             senderIdentity:
                 message.targetIdentity ??
                 message.userId?.toString() ??
@@ -672,7 +675,7 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
           );
           emit(
             state.copyWith(
-              reactions: [...state.reactions, reaction].take(3).toList(),
+              reactions: _appendReaction(state.reactions, reaction),
             ),
           );
         }
@@ -871,9 +874,21 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
         if (data.type == 'chat' && data.text?.trim().isNotEmpty == true) {
           emit(state.copyWith(messages: [...state.messages, data]));
         } else if (data.type == 'reaction' && data.reaction != null) {
+          final reaction = data.id == null
+              ? MeetingRoomDataMessage(
+                  type: data.type,
+                  id: _reactionId(),
+                  senderIdentity: data.senderIdentity,
+                  senderName: data.senderName,
+                  text: data.text,
+                  reaction: data.reaction,
+                  raised: data.raised,
+                  sentAt: data.sentAt,
+                )
+              : data;
           emit(
             state.copyWith(
-              reactions: [...state.reactions, data].take(3).toList(),
+              reactions: _appendReaction(state.reactions, reaction),
             ),
           );
         } else if (data.type == 'hand_raise' && data.raised != null) {
@@ -896,6 +911,19 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
           ),
         );
     }
+  }
+
+  String _reactionId() =>
+      '${DateTime.now().microsecondsSinceEpoch}_${state.reactions.length}';
+
+  List<MeetingRoomDataMessage> _appendReaction(
+    List<MeetingRoomDataMessage> current,
+    MeetingRoomDataMessage reaction,
+  ) {
+    const maxActiveReactions = 12;
+    final next = [...current, reaction];
+    if (next.length <= maxActiveReactions) return next;
+    return next.sublist(next.length - maxActiveReactions);
   }
 
   @override

@@ -88,6 +88,15 @@ class MeetingRoomReactionSent extends MeetingRoomEvent {
   List<Object?> get props => [reaction];
 }
 
+class MeetingRoomReactionExpired extends MeetingRoomEvent {
+  const MeetingRoomReactionExpired(this.reactionId);
+
+  final String reactionId;
+
+  @override
+  List<Object?> get props => [reactionId];
+}
+
 class MeetingRoomParticipantMuted extends MeetingRoomEvent {
   const MeetingRoomParticipantMuted({
     required this.targetIdentity,

@@ -70,7 +70,7 @@ class MeetingRealtimeMessageModel extends MeetingRealtimeMessage {
       code: intValue(json['code']),
       status: json['status']?.toString(),
       userId: intValue(json['user_id']),
-      username: json['username']?.toString(),
+      username: (json['username'] ?? json['full_name'])?.toString(),
       avatar: json['avatar']?.toString(),
       token: token,
       requestId: json['request_id']?.toString(),

@@ -16,6 +16,7 @@ import 'package:dc_management_app/features/meetings/data/services/livekit_media_
 import 'package:dc_management_app/features/meetings/presentation/bloc/meeting_room_bloc.dart';
 import 'package:dc_management_app/features/meetings/presentation/pages/meeting_new_design/widgets/call/meeting_call_control_bar.dart';
 import 'package:dc_management_app/features/meetings/presentation/pages/meeting_new_design/widgets/call/meeting_call_participant_tile.dart';
+import 'package:dc_management_app/features/meetings/presentation/pages/meeting_new_design/widgets/call/meeting_call_stage.dart';
 import 'package:dc_management_app/features/meetings/presentation/pages/meeting_room_page.dart';
 import 'package:dc_management_app/injection_container.dart';
 import 'package:dc_management_app/l10n/app_localizations.dart';
@@ -64,6 +65,10 @@ void main() {
     expect(find.text('Design meeting'), findsOneWidget);
     expect(find.byType(MeetingCallControlBar), findsOneWidget);
     expect(find.text('1'), findsOneWidget);
+    expect(
+      tester.getSize(find.byType(MeetingCallStage)).height,
+      greaterThan(0),
+    );
   });
 
   testWidgets('production room renders the approval waiting state', (
@@ -101,6 +106,31 @@ void main() {
 
     expect(find.byType(TextField), findsOneWidget);
     expect(find.text('Hali xabar yo‘q'), findsOneWidget);
+  });
+
+  testWidgets('web-style reactions animate and expire from the meeting stage', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Qo‘shilish'));
+    await tester.tap(find.text('Qo‘shilish'));
+    await tester.pumpAndSettle();
+
+    roomRepository.emit(
+      const MeetingRealtimeMessage(type: 'reaction_received', reaction: '🎉'),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(find.text('🎉'), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 2000));
+    await tester.pump();
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(find.text('🎉'), findsNothing);
   });
 
   testWidgets('compact participant label fits a local mini-card', (
@@ -330,6 +360,8 @@ class _FakeMeetingRoomRepository implements MeetingRoomRepository {
 
   @override
   Future<void> close() async {}
+
+  void emit(MeetingRealtimeMessage message) => _events.add(message);
 
   Future<void> dispose() async {
     await _events.close();

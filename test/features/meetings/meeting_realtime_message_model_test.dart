@@ -63,4 +63,17 @@ void main() {
 
     expect(message.code, 4004);
   });
+
+  test('parses reaction events returned by the meeting websocket', () {
+    final message = MeetingRealtimeMessageModel.fromJson({
+      'type': 'reaction_received',
+      'reaction': '🎉',
+      'full_name': 'Ali Valiyev',
+      'sent_at': '2026-09-26T10:00:00Z',
+    });
+
+    expect(message.reaction, '🎉');
+    expect(message.username, 'Ali Valiyev');
+    expect(message.raisedAt, DateTime.parse('2026-09-26T10:00:00Z'));
+  });
 }

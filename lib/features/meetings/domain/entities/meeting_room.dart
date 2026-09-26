@@ -104,6 +104,7 @@ class MeetingRoomDataMessage extends Equatable {
     required this.type,
     required this.senderIdentity,
     required this.senderName,
+    this.id,
     this.text,
     this.reaction,
     this.raised,
@@ -113,6 +114,7 @@ class MeetingRoomDataMessage extends Equatable {
   final String type;
   final String senderIdentity;
   final String senderName;
+  final String? id;
   final String? text;
   final String? reaction;
   final bool? raised;
@@ -123,6 +125,7 @@ class MeetingRoomDataMessage extends Equatable {
     type,
     senderIdentity,
     senderName,
+    id,
     text,
     reaction,
     raised,
