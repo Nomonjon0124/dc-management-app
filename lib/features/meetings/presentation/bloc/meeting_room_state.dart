@@ -21,6 +21,7 @@ class MeetingRoomState extends Equatable {
     this.screenSharing = false,
     this.participants = const [],
     this.pendingRequests = const [],
+    this.pendingUnmuteRequests = const [],
     this.messages = const [],
     this.reactions = const [],
     this.audioInputs = const [],
@@ -47,6 +48,7 @@ class MeetingRoomState extends Equatable {
   final bool screenSharing;
   final List<MeetingRoomParticipant> participants;
   final List<MeetingRoomJoinRequest> pendingRequests;
+  final List<MeetingTrackUnmuteRequest> pendingUnmuteRequests;
   final List<MeetingRoomDataMessage> messages;
   final List<MeetingRoomDataMessage> reactions;
   final List<MeetingMediaDevice> audioInputs;
@@ -78,6 +80,7 @@ class MeetingRoomState extends Equatable {
     bool? screenSharing,
     List<MeetingRoomParticipant>? participants,
     List<MeetingRoomJoinRequest>? pendingRequests,
+    List<MeetingTrackUnmuteRequest>? pendingUnmuteRequests,
     List<MeetingRoomDataMessage>? messages,
     List<MeetingRoomDataMessage>? reactions,
     List<MeetingMediaDevice>? audioInputs,
@@ -105,6 +108,8 @@ class MeetingRoomState extends Equatable {
       screenSharing: screenSharing ?? this.screenSharing,
       participants: participants ?? this.participants,
       pendingRequests: pendingRequests ?? this.pendingRequests,
+      pendingUnmuteRequests:
+          pendingUnmuteRequests ?? this.pendingUnmuteRequests,
       messages: messages ?? this.messages,
       reactions: reactions ?? this.reactions,
       audioInputs: audioInputs ?? this.audioInputs,
@@ -135,6 +140,7 @@ class MeetingRoomState extends Equatable {
     screenSharing,
     participants,
     pendingRequests,
+    pendingUnmuteRequests,
     messages,
     reactions,
     audioInputs,

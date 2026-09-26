@@ -247,7 +247,7 @@ class _FakeMeetingRoomRepository implements MeetingRoomRepository {
   Future<void> reject(int userId) async {}
 
   @override
-  Future<void> requestToken() async {
+  Future<void> requestToken({String? deviceId, String? deviceName}) async {
     _events.add(
       const MeetingRealtimeMessage(
         type: 'token_response',
@@ -293,6 +293,25 @@ class _FakeMeetingRoomRepository implements MeetingRoomRepository {
 
   @override
   Future<void> sendReaction(String reaction) async {}
+
+  @override
+  Future<void> moderateTrack({
+    required String targetIdentity,
+    required String trackSource,
+  }) async {}
+
+  @override
+  Future<void> requestTrackUnmute({
+    required String targetIdentity,
+    required String trackSource,
+  }) async {}
+
+  @override
+  Future<void> respondTrackUnmute({
+    required String requestId,
+    required String trackSource,
+    required bool accept,
+  }) async {}
 
   @override
   Future<void> setScreenShareEnabled(bool enabled) async {}

@@ -1924,4 +1924,9 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get meetingCallSendMessage => 'Xabar yuborish';
+
+  @override
+  String meetingCallLateReason(int minutes) {
+    return 'Kechikish: $minutes daqiqa';
+  }
 }

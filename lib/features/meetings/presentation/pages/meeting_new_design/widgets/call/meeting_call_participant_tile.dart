@@ -23,6 +23,7 @@ class MeetingCallParticipantTile extends StatelessWidget {
     this.avatarSize = 56,
     this.backgroundColor,
     this.showMicrophone = true,
+    this.showCamera = false,
     this.compactLabel = false,
     this.avatarAlignment = Alignment.center,
     this.avatarPadding = EdgeInsets.zero,
@@ -40,6 +41,7 @@ class MeetingCallParticipantTile extends StatelessWidget {
   final double avatarSize;
   final Color? backgroundColor;
   final bool showMicrophone;
+  final bool showCamera;
   final bool compactLabel;
   final Alignment avatarAlignment;
   final EdgeInsets avatarPadding;
@@ -172,6 +174,20 @@ class MeetingCallParticipantTile extends StatelessWidget {
                   BlendMode.srcIn,
                 ),
               ),
+            ],
+            if (showCamera) ...[
+              SizedBox(width: 6.w),
+              (cameraOn
+                      ? Assets.icons.meetingVideo
+                      : Assets.icons.meetingVideoOff)
+                  .svg(
+                    width: 14.w,
+                    height: 14.w,
+                    colorFilter: ColorFilter.mode(
+                      colors.iconWhite,
+                      BlendMode.srcIn,
+                    ),
+                  ),
             ],
           ],
         ),

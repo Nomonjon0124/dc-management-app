@@ -88,6 +88,47 @@ class MeetingRoomReactionSent extends MeetingRoomEvent {
   List<Object?> get props => [reaction];
 }
 
+class MeetingRoomParticipantMuted extends MeetingRoomEvent {
+  const MeetingRoomParticipantMuted({
+    required this.targetIdentity,
+    required this.trackSource,
+  });
+
+  final String targetIdentity;
+  final String trackSource;
+
+  @override
+  List<Object?> get props => [targetIdentity, trackSource];
+}
+
+class MeetingRoomUnmuteRequested extends MeetingRoomEvent {
+  const MeetingRoomUnmuteRequested({
+    required this.targetIdentity,
+    required this.trackSource,
+  });
+
+  final String targetIdentity;
+  final String trackSource;
+
+  @override
+  List<Object?> get props => [targetIdentity, trackSource];
+}
+
+class MeetingRoomUnmuteResponseSent extends MeetingRoomEvent {
+  const MeetingRoomUnmuteResponseSent({
+    required this.requestId,
+    required this.trackSource,
+    required this.accept,
+  });
+
+  final String requestId;
+  final String trackSource;
+  final bool accept;
+
+  @override
+  List<Object?> get props => [requestId, trackSource, accept];
+}
+
 class MeetingRoomScreenShareToggled extends MeetingRoomEvent {
   const MeetingRoomScreenShareToggled({required this.enabled});
 

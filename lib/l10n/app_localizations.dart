@@ -3817,6 +3817,12 @@ abstract class AppLocalizations {
   /// In uz, this message translates to:
   /// **'Xabar yuborish'**
   String get meetingCallSendMessage;
+
+  /// No description provided for @meetingCallLateReason.
+  ///
+  /// In uz, this message translates to:
+  /// **'Kechikish: {minutes} daqiqa'**
+  String meetingCallLateReason(int minutes);
 }
 
 class _AppLocalizationsDelegate

@@ -329,7 +329,11 @@ Future<void> configureDependencies() async {
     )
     ..registerLazySingleton<LiveKitMediaService>(LiveKitMediaService.new)
     ..registerLazySingleton<MeetingRoomRepository>(
-      () => MeetingRoomRepositoryImpl(realtime: getIt(), media: getIt()),
+      () => MeetingRoomRepositoryImpl(
+        realtime: getIt(),
+        media: getIt(),
+        storage: getIt(),
+      ),
     )
     ..registerFactory<MeetingRoomBloc>(
       () => MeetingRoomBloc(

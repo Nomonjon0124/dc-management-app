@@ -16,6 +16,17 @@ class MeetingRealtimeMessageModel extends MeetingRealtimeMessage {
     super.username,
     super.avatar,
     super.token,
+    super.requestId,
+    super.targetIdentity,
+    super.trackSource,
+    super.muted,
+    super.actorUserId,
+    super.raised,
+    super.raisedAt,
+    super.reaction,
+    super.expiresAt,
+    super.fromUserId,
+    super.fromName,
   });
 
   factory MeetingRealtimeMessageModel.fromJson(Map<String, dynamic> json) {
@@ -25,6 +36,8 @@ class MeetingRealtimeMessageModel extends MeetingRealtimeMessage {
     }
 
     bool? boolValue(dynamic value) => value is bool ? value : null;
+    DateTime? dateValue(dynamic value) =>
+        DateTime.tryParse(value?.toString() ?? '');
     final tokenMap = json['token'] is Map
         ? (json['token'] as Map).cast<String, dynamic>()
         : json;
@@ -60,6 +73,17 @@ class MeetingRealtimeMessageModel extends MeetingRealtimeMessage {
       username: json['username']?.toString(),
       avatar: json['avatar']?.toString(),
       token: token,
+      requestId: json['request_id']?.toString(),
+      targetIdentity: json['target_identity']?.toString(),
+      trackSource: json['track_source']?.toString(),
+      muted: boolValue(json['muted']),
+      actorUserId: intValue(json['actor_user_id']),
+      raised: boolValue(json['raised']),
+      raisedAt: dateValue(json['raised_at'] ?? json['sent_at']),
+      reaction: json['reaction']?.toString(),
+      expiresAt: dateValue(json['expires_at']),
+      fromUserId: intValue(json['from_user_id']),
+      fromName: json['from_name']?.toString(),
     );
   }
 }

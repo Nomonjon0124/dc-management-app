@@ -35,4 +35,32 @@ void main() {
 
     expect(message.token, isNull);
   });
+
+  test('parses moderation and approval request fields', () {
+    final message = MeetingRealtimeMessageModel.fromJson({
+      'type': 'track_unmute_requested',
+      'request_id': 'request-1',
+      'from_user_id': 7,
+      'from_name': 'Organizer',
+      'target_identity': '45_phone',
+      'track_source': 'microphone',
+      'expires_at': '2026-09-24T10:00:00Z',
+    });
+
+    expect(message.requestId, 'request-1');
+    expect(message.fromUserId, 7);
+    expect(message.targetIdentity, '45_phone');
+    expect(message.trackSource, 'microphone');
+    expect(message.expiresAt, isNotNull);
+  });
+
+  test('accepts string error codes from the websocket contract', () {
+    final message = MeetingRealtimeMessageModel.fromJson({
+      'type': 'error',
+      'code': '4004',
+      'message': 'Meeting tugagan',
+    });
+
+    expect(message.code, 4004);
+  });
 }

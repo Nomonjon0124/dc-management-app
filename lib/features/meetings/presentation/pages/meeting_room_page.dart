@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../config/routes/entity/routes.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/extentions/text_extensions.dart';
 import '../../../../core/gen/assets.gen.dart';
@@ -11,6 +13,8 @@ import '../../../../l10n/app_localizations.dart';
 import '../../data/services/livekit_media_service.dart';
 import '../../domain/entities/meeting.dart';
 import '../../domain/entities/meeting_room.dart';
+import '../../domain/entities/meeting_filter.dart';
+import '../../domain/usecases/get_meetings_usecase.dart';
 import '../bloc/meeting_room_bloc.dart';
 import '../bloc/meeting_room_event.dart';
 import '../bloc/meeting_room_state.dart';
@@ -48,6 +52,89 @@ class MeetingRoomPage extends StatelessWidget {
       create: (_) => getIt<MeetingRoomBloc>()
         ..add(MeetingRoomStarted(meetingId, initialMeeting: initialMeeting)),
       child: const _MeetingRoomView(),
+    );
+  }
+}
+
+/// Resolves a shared UID link before opening the numeric meeting room route.
+class MeetingRoomLookupPage extends StatefulWidget {
+  const MeetingRoomLookupPage({super.key, required this.reference});
+
+  final String reference;
+
+  @override
+  State<MeetingRoomLookupPage> createState() => _MeetingRoomLookupPageState();
+}
+
+class _MeetingRoomLookupPageState extends State<MeetingRoomLookupPage> {
+  late final Future<List<Meeting>> _lookup;
+
+  @override
+  void initState() {
+    super.initState();
+    _lookup = getIt<GetMeetingsUseCase>()(MeetingFilter(uid: widget.reference));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
+      backgroundColor: colors.backgroundBase,
+      body: SafeArea(
+        child: FutureBuilder<List<Meeting>>(
+          future: _lookup,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return Center(
+                child: CircularProgressIndicator(color: colors.accentStrong),
+              );
+            }
+            final meetings = snapshot.data ?? const <Meeting>[];
+            Meeting? meeting;
+            for (final item in meetings) {
+              if (item.uid.toLowerCase() == widget.reference.toLowerCase()) {
+                meeting = item;
+                break;
+              }
+            }
+            if (meeting == null || snapshot.hasError) {
+              return _lookupFailure(context, l10n);
+            }
+            return MeetingRoomPage(
+              meetingId: meeting.id,
+              initialMeeting: meeting,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _lookupFailure(BuildContext context, AppLocalizations l10n) {
+    final colors = AppColors.of(context);
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            l10n.commonError
+                .s(15.sp)
+                .w(700)
+                .c(colors.textStrong)
+                .a(TextAlign.center),
+            SizedBox(height: 16.h),
+            MeetingPreviewButton(
+              label: l10n.meetingCallHome,
+              background: colors.accentStrong,
+              foreground: colors.textWhite,
+              icon: Assets.icons.icArrowLeftLarge,
+              onTap: () => context.goNamed(Routes.meetings.name),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -544,6 +631,13 @@ class _MeetingRoomView extends StatelessWidget {
                       top: 0,
                       child: _pendingRequestOverlay(context, state),
                     ),
+                  if (!state.isHost && state.pendingUnmuteRequests.isNotEmpty)
+                    Positioned(
+                      left: 12.w,
+                      right: 12.w,
+                      bottom: 12.h,
+                      child: _unmuteRequestOverlay(context, state),
+                    ),
                   if (state.handRaised)
                     Positioned(
                       top: 16.h,
@@ -667,6 +761,7 @@ class _MeetingRoomView extends StatelessWidget {
         avatarSize: 56,
         showMicrophone: true,
         screenShare: true,
+        allowActions: state.isHost,
       );
     }
     if (remote.isEmpty) {
@@ -693,6 +788,7 @@ class _MeetingRoomView extends StatelessWidget {
         avatarPadding: EdgeInsets.only(top: compact ? 72.h : 128.h),
         showMicrophone: false,
         compactLabel: true,
+        allowActions: state.isHost,
       );
     }
     return GridView.builder(
@@ -712,6 +808,7 @@ class _MeetingRoomView extends StatelessWidget {
         meeting: state.meeting,
         avatarSize: 56,
         showMicrophone: true,
+        allowActions: state.isHost,
       ),
     );
   }
@@ -727,11 +824,12 @@ class _MeetingRoomView extends StatelessWidget {
     required bool showMicrophone,
     bool compactLabel = false,
     bool screenShare = false,
+    bool allowActions = false,
     Alignment avatarAlignment = Alignment.center,
     EdgeInsets avatarPadding = EdgeInsets.zero,
   }) {
     final name = participant.isLocal ? l10n.meetingCallYou : participant.name;
-    return MeetingCallParticipantTile(
+    final tile = MeetingCallParticipantTile(
       name: name,
       isLocal: participant.isLocal,
       microphoneOn: participant.microphoneEnabled,
@@ -748,9 +846,15 @@ class _MeetingRoomView extends StatelessWidget {
       avatarSize: avatarSize,
       backgroundColor: backgroundColor,
       showMicrophone: showMicrophone,
+      showCamera: !participant.isLocal,
       compactLabel: compactLabel,
       avatarAlignment: avatarAlignment,
       avatarPadding: avatarPadding,
+    );
+    if (!allowActions || participant.isLocal) return tile;
+    return GestureDetector(
+      onLongPress: () => _showParticipantActions(context, participant),
+      child: tile,
     );
   }
 
@@ -759,12 +863,180 @@ class _MeetingRoomView extends StatelessWidget {
     MeetingRoomParticipant participant,
   ) {
     for (final member in meeting?.participantsInfo ?? const []) {
-      if (member.username == participant.name ||
+      if ((participant.userId != null && member.id == participant.userId) ||
+          member.username == participant.name ||
           '${member.id}' == participant.identity) {
         return member.avatar;
       }
     }
     return '';
+  }
+
+  Widget _unmuteRequestOverlay(BuildContext context, MeetingRoomState state) {
+    final request = state.pendingUnmuteRequests.first;
+    final l10n = AppLocalizations.of(context);
+    final isCamera = request.trackSource == 'camera';
+    final bloc = context.read<MeetingRoomBloc>();
+    return MeetingPreviewSurface(
+      color: AppColors.of(context).backgroundBase,
+      radius: 14.r,
+      borderColor: AppColors.of(context).strokeSub,
+      child: Padding(
+        padding: EdgeInsets.all(12.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            (isCamera
+                    ? l10n.meetingCallCameraRequestTitle
+                    : l10n.meetingCallMicRequestTitle)
+                .s(14.sp)
+                .w(800)
+                .c(AppColors.of(context).textStrong),
+            SizedBox(height: 4.h),
+            (isCamera
+                    ? l10n.meetingCallCameraRequestHint
+                    : l10n.meetingCallMicRequestHint)
+                .s(12.sp)
+                .w(500)
+                .c(AppColors.of(context).textSub),
+            SizedBox(height: 10.h),
+            Row(
+              children: [
+                Expanded(
+                  child: MeetingPreviewButton(
+                    label: l10n.meetingCallNotNow,
+                    background: AppColors.of(context).backgroundElevation2,
+                    foreground: AppColors.of(context).textStrong,
+                    icon: Assets.icons.icClose,
+                    onTap: () => bloc.add(
+                      MeetingRoomUnmuteResponseSent(
+                        requestId: request.requestId,
+                        trackSource: request.trackSource,
+                        accept: false,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: MeetingPreviewButton(
+                    label: isCamera
+                        ? l10n.meetingCallEnableCamera
+                        : l10n.meetingCallEnableMicrophone,
+                    background: AppColors.of(context).accentStrong,
+                    foreground: AppColors.of(context).textWhite,
+                    icon: isCamera
+                        ? Assets.icons.meetingVideo
+                        : Assets.icons.meetingMic,
+                    onTap: () {
+                      bloc.add(
+                        MeetingRoomUnmuteResponseSent(
+                          requestId: request.requestId,
+                          trackSource: request.trackSource,
+                          accept: true,
+                        ),
+                      );
+                      bloc.add(
+                        isCamera
+                            ? const MeetingRoomCameraToggled()
+                            : const MeetingRoomMicrophoneToggled(),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showParticipantActions(
+    BuildContext context,
+    MeetingRoomParticipant participant,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final bloc = context.read<MeetingRoomBloc>();
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.of(context).overlaySurface,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              participant.name
+                  .s(17.sp)
+                  .w(800)
+                  .c(AppColors.of(context).textStrong),
+              SizedBox(height: 12.h),
+              if (participant.microphoneEnabled)
+                _sheetAction(
+                  context,
+                  icon: Assets.icons.meetingMicOff,
+                  label: l10n.meetingCallMicrophone,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    bloc.add(
+                      MeetingRoomParticipantMuted(
+                        targetIdentity: participant.identity,
+                        trackSource: 'microphone',
+                      ),
+                    );
+                  },
+                )
+              else
+                _sheetAction(
+                  context,
+                  icon: Assets.icons.meetingMic,
+                  label: l10n.meetingCallEnableMicrophone,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    bloc.add(
+                      MeetingRoomUnmuteRequested(
+                        targetIdentity: participant.identity,
+                        trackSource: 'microphone',
+                      ),
+                    );
+                  },
+                ),
+              if (participant.cameraEnabled)
+                _sheetAction(
+                  context,
+                  icon: Assets.icons.meetingVideoOff,
+                  label: l10n.meetingCallCamera,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    bloc.add(
+                      MeetingRoomParticipantMuted(
+                        targetIdentity: participant.identity,
+                        trackSource: 'camera',
+                      ),
+                    );
+                  },
+                )
+              else
+                _sheetAction(
+                  context,
+                  icon: Assets.icons.meetingVideo,
+                  label: l10n.meetingCallEnableCamera,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    bloc.add(
+                      MeetingRoomUnmuteRequested(
+                        targetIdentity: participant.identity,
+                        trackSource: 'camera',
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _pendingRequestOverlay(BuildContext context, MeetingRoomState state) {

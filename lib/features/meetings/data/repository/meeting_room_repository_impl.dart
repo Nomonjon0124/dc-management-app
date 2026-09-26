@@ -1,5 +1,7 @@
 import '../../domain/entities/meeting_room.dart';
 import '../../domain/repository/meeting_room_repository.dart';
+import '../../../../core/constants/storage_keys.dart';
+import '../../../../core/services/storage_service.dart';
 import '../data_sources/meeting_realtime_data_source.dart';
 import '../services/livekit_media_service.dart';
 
@@ -7,11 +9,14 @@ class MeetingRoomRepositoryImpl implements MeetingRoomRepository {
   MeetingRoomRepositoryImpl({
     required MeetingRealtimeDataSource realtime,
     required LiveKitMediaService media,
+    StorageService? storage,
   }) : _realtime = realtime,
-       _media = media;
+       _media = media,
+       _storage = storage;
 
   final MeetingRealtimeDataSource _realtime;
   final LiveKitMediaService _media;
+  final StorageService? _storage;
 
   @override
   Stream<MeetingRealtimeMessage> get events => _realtime.events;
@@ -41,7 +46,16 @@ class MeetingRoomRepositoryImpl implements MeetingRoomRepository {
   });
 
   @override
-  Future<void> requestToken() => _realtime.send(const {'action': 'get_token'});
+  Future<void> requestToken({
+    String? deviceId,
+    String? deviceName,
+  }) => _realtime.send({
+    'action': 'get_token',
+    if ((deviceId ?? _storage?.getString(StorageKeys.deviceId))?.isNotEmpty ??
+        false)
+      'device_id': deviceId ?? _storage?.getString(StorageKeys.deviceId),
+    'device_name': deviceName ?? 'Mobile',
+  });
 
   @override
   Future<void> connectMedia(MeetingRoomToken token) => _media.connect(token);
@@ -55,14 +69,49 @@ class MeetingRoomRepositoryImpl implements MeetingRoomRepository {
       _media.setCameraEnabled(enabled);
 
   @override
-  Future<void> setHandRaised(bool raised) => _media.setHandRaised(raised);
+  Future<void> setHandRaised(bool raised) =>
+      _realtime.send({'action': 'hand_raise', 'raised': raised});
 
   @override
   Future<void> sendChatMessage(String message) =>
       _media.sendChatMessage(message);
 
   @override
-  Future<void> sendReaction(String reaction) => _media.sendReaction(reaction);
+  Future<void> sendReaction(String reaction) =>
+      _realtime.send({'action': 'send_reaction', 'reaction': reaction});
+
+  @override
+  Future<void> moderateTrack({
+    required String targetIdentity,
+    required String trackSource,
+  }) => _realtime.send({
+    'action': 'moderate_track',
+    'target_identity': targetIdentity,
+    'track_source': trackSource,
+    'operation': 'mute',
+  });
+
+  @override
+  Future<void> requestTrackUnmute({
+    required String targetIdentity,
+    required String trackSource,
+  }) => _realtime.send({
+    'action': 'request_track_unmute',
+    'target_identity': targetIdentity,
+    'track_source': trackSource,
+  });
+
+  @override
+  Future<void> respondTrackUnmute({
+    required String requestId,
+    required String trackSource,
+    required bool accept,
+  }) => _realtime.send({
+    'action': 'respond_track_unmute_request',
+    'request_id': requestId,
+    'decision': accept ? 'accept' : 'reject',
+    'track_source': trackSource,
+  });
 
   @override
   Future<void> setScreenShareEnabled(bool enabled) =>

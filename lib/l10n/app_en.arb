@@ -672,5 +672,9 @@
   "meetingCallEnableMicrophone": "Turn on microphone",
   "meetingCallEnableCamera": "Turn on camera",
   "meetingCallStickersTitle": "Stickers",
-  "meetingCallSendMessage": "Send message"
+  "meetingCallSendMessage": "Send message",
+  "meetingCallLateReason": "Late by {minutes} minutes",
+  "@meetingCallLateReason": {
+    "placeholders": { "minutes": { "type": "int" } }
+  }
 }

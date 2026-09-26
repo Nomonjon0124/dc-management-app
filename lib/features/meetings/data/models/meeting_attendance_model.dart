@@ -13,6 +13,13 @@ class MeetingAttendanceModel extends MeetingAttendance {
     super.userName,
     super.userPosition,
     super.userAvatar,
+    super.meetingStartTime,
+    super.joinedAt,
+    super.leftAt,
+    super.durationMinutes,
+    super.lateMinutes,
+    super.reasonDeadline,
+    super.canSubmitReason,
   });
 
   factory MeetingAttendanceModel.fromJson(Map<String, dynamic> json) {
@@ -43,6 +50,17 @@ class MeetingAttendanceModel extends MeetingAttendance {
       userName: pick(['username', 'full_name', 'name']),
       userPosition: pick(['position']),
       userAvatar: pick(['avatar']),
+      meetingStartTime: DateTime.tryParse(
+        json['meeting_start_time']?.toString() ?? '',
+      ),
+      joinedAt: DateTime.tryParse(json['joined_at']?.toString() ?? ''),
+      leftAt: DateTime.tryParse(json['left_at']?.toString() ?? ''),
+      durationMinutes: (json['duration_minutes'] as num?)?.toInt() ?? 0,
+      lateMinutes: (json['late_minutes'] as num?)?.toInt() ?? 0,
+      reasonDeadline: DateTime.tryParse(
+        json['reason_deadline']?.toString() ?? '',
+      ),
+      canSubmitReason: json['can_submit_reason'] as bool? ?? false,
     );
   }
 }

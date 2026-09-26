@@ -9,6 +9,7 @@ class MeetingFilter extends Equatable {
     this.page,
     this.projectId,
     this.search,
+    this.uid,
     this.startDateGte,
     this.startDateLte,
   });
@@ -21,6 +22,7 @@ class MeetingFilter extends Equatable {
   final int? page;
   final int? projectId;
   final String? search;
+  final String? uid;
   final DateTime? startDateGte;
   final DateTime? startDateLte;
 
@@ -28,6 +30,7 @@ class MeetingFilter extends Equatable {
       isCompleted != null ||
       organizerId != null ||
       projectId != null ||
+      uid != null ||
       startDateGte != null ||
       startDateLte != null;
 
@@ -38,6 +41,7 @@ class MeetingFilter extends Equatable {
     page: page,
     projectId: projectId,
     search: search,
+    uid: uid,
     startDateGte: startDateGte,
     startDateLte: startDateLte,
   );
@@ -55,6 +59,7 @@ class MeetingFilter extends Equatable {
     page: page,
     projectId: projectId,
     search: search,
+    uid: uid,
     startDateGte: startDateGte,
     startDateLte: startDateLte,
   );
@@ -67,6 +72,7 @@ class MeetingFilter extends Equatable {
     page,
     projectId,
     search,
+    uid,
     startDateGte,
     startDateLte,
   ];

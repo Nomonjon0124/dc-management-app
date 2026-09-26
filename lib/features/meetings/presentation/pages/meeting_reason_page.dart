@@ -104,7 +104,9 @@ class _ReasonViewState extends State<_ReasonView> {
               // holat ko'rinishi. Rad etilgan bo'lsa ham qayta yozib bo'lmaydi.
               final mine = state.myAttendance;
               if (mine != null &&
-                  (mine.isAttended || mine.absenceReason.trim().isNotEmpty)) {
+                  ((mine.isAttended && mine.lateMinutes <= 5) ||
+                      mine.absenceReason.trim().isNotEmpty ||
+                      (!mine.canSubmitReason && mine.lateMinutes > 5))) {
                 return _ReasonStatusView(
                   title: state.title,
                   date: formatMeetingDate(state.startDate),
@@ -122,8 +124,12 @@ class _ReasonViewState extends State<_ReasonView> {
                       ),
                       child: BlocBuilder<MeetingReasonBloc, MeetingReasonState>(
                         buildWhen: (a, b) =>
-                            a.title != b.title || a.startDate != b.startDate,
+                            a.title != b.title ||
+                            a.startDate != b.startDate ||
+                            a.myAttendance != b.myAttendance,
                         builder: (context, state) {
+                          final lateMinutes =
+                              state.myAttendance?.lateMinutes ?? 0;
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -145,6 +151,14 @@ class _ReasonViewState extends State<_ReasonView> {
                                 ],
                               ),
                               SizedBox(height: 8.h),
+                              if (lateMinutes > 5) ...[
+                                l10n
+                                    .meetingCallLateReason(lateMinutes)
+                                    .s(12.sp)
+                                    .w(600)
+                                    .c(colors.errorStrong),
+                                SizedBox(height: 8.h),
+                              ],
                               _ReasonField(
                                 controller: _controller,
                                 hint: l10n.meetingReasonHint,
@@ -196,10 +210,9 @@ class _OrganizerView extends StatelessWidget {
                         .copyWith(maxLines: 1, overflow: TextOverflow.ellipsis),
                   ),
                   SizedBox(width: 8.w),
-                  formatMeetingDate(state.startDate)
-                      .s(11.sp)
-                      .w(500)
-                      .c(colors.textSub),
+                  formatMeetingDate(
+                    state.startDate,
+                  ).s(11.sp).w(500).c(colors.textSub),
                 ],
               ),
             ),
@@ -218,18 +231,19 @@ class _OrganizerView extends StatelessWidget {
                           row: row,
                           busy: state.approvingId == row.id,
                           rejected: state.rejectedIds.contains(row.id),
-                          onApprove: () => context
-                              .read<MeetingReasonBloc>()
-                              .add(MeetingExcuseDecided(
-                                attendanceId: row.id,
-                                approved: true,
-                              )),
-                          onReject: () => context
-                              .read<MeetingReasonBloc>()
-                              .add(MeetingExcuseDecided(
-                                attendanceId: row.id,
-                                approved: false,
-                              )),
+                          onApprove: () =>
+                              context.read<MeetingReasonBloc>().add(
+                                MeetingExcuseDecided(
+                                  attendanceId: row.id,
+                                  approved: true,
+                                ),
+                              ),
+                          onReject: () => context.read<MeetingReasonBloc>().add(
+                            MeetingExcuseDecided(
+                              attendanceId: row.id,
+                              approved: false,
+                            ),
+                          ),
                         );
                       },
                     ),

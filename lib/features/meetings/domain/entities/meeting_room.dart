@@ -57,6 +57,10 @@ class MeetingRoomParticipant extends Equatable {
     this.screenShareTrackSid,
     this.handRaised = false,
     this.screenSharing = false,
+    this.userId,
+    this.deviceId,
+    this.deviceName,
+    this.sessionIdentities = const [],
   });
 
   final String identity;
@@ -70,6 +74,10 @@ class MeetingRoomParticipant extends Equatable {
   final String? screenShareTrackSid;
   final bool handRaised;
   final bool screenSharing;
+  final int? userId;
+  final String? deviceId;
+  final String? deviceName;
+  final List<String> sessionIdentities;
 
   @override
   List<Object?> get props => [
@@ -84,6 +92,10 @@ class MeetingRoomParticipant extends Equatable {
     screenShareTrackSid,
     handRaised,
     screenSharing,
+    userId,
+    deviceId,
+    deviceName,
+    sessionIdentities,
   ];
 }
 
@@ -133,6 +145,34 @@ class MeetingRoomJoinRequest extends Equatable {
   List<Object?> get props => [userId, username, avatar];
 }
 
+class MeetingTrackUnmuteRequest extends Equatable {
+  const MeetingTrackUnmuteRequest({
+    required this.requestId,
+    required this.trackSource,
+    this.targetIdentity,
+    this.fromUserId,
+    this.fromName,
+    this.expiresAt,
+  });
+
+  final String requestId;
+  final String trackSource;
+  final String? targetIdentity;
+  final int? fromUserId;
+  final String? fromName;
+  final DateTime? expiresAt;
+
+  @override
+  List<Object?> get props => [
+    requestId,
+    trackSource,
+    targetIdentity,
+    fromUserId,
+    fromName,
+    expiresAt,
+  ];
+}
+
 class MeetingRealtimeMessage extends Equatable {
   const MeetingRealtimeMessage({
     required this.type,
@@ -149,6 +189,17 @@ class MeetingRealtimeMessage extends Equatable {
     this.username,
     this.avatar,
     this.token,
+    this.requestId,
+    this.targetIdentity,
+    this.trackSource,
+    this.muted,
+    this.actorUserId,
+    this.raised,
+    this.raisedAt,
+    this.reaction,
+    this.expiresAt,
+    this.fromUserId,
+    this.fromName,
   });
 
   final String type;
@@ -165,6 +216,17 @@ class MeetingRealtimeMessage extends Equatable {
   final String? username;
   final String? avatar;
   final MeetingRoomToken? token;
+  final String? requestId;
+  final String? targetIdentity;
+  final String? trackSource;
+  final bool? muted;
+  final int? actorUserId;
+  final bool? raised;
+  final DateTime? raisedAt;
+  final String? reaction;
+  final DateTime? expiresAt;
+  final int? fromUserId;
+  final String? fromName;
 
   @override
   List<Object?> get props => [
@@ -182,6 +244,17 @@ class MeetingRealtimeMessage extends Equatable {
     username,
     avatar,
     token,
+    requestId,
+    targetIdentity,
+    trackSource,
+    muted,
+    actorUserId,
+    raised,
+    raisedAt,
+    reaction,
+    expiresAt,
+    fromUserId,
+    fromName,
   ];
 }
 

@@ -14,6 +14,13 @@ class MeetingAttendance extends Equatable {
     this.userName = '',
     this.userPosition = '',
     this.userAvatar = '',
+    this.meetingStartTime,
+    this.joinedAt,
+    this.leftAt,
+    this.durationMinutes = 0,
+    this.lateMinutes = 0,
+    this.reasonDeadline,
+    this.canSubmitReason = false,
   });
 
   final int id;
@@ -31,6 +38,13 @@ class MeetingAttendance extends Equatable {
   final String userName;
   final String userPosition;
   final String userAvatar;
+  final DateTime? meetingStartTime;
+  final DateTime? joinedAt;
+  final DateTime? leftAt;
+  final int durationMinutes;
+  final int lateMinutes;
+  final DateTime? reasonDeadline;
+  final bool canSubmitReason;
 
   @override
   List<Object?> get props => [
@@ -44,5 +58,12 @@ class MeetingAttendance extends Equatable {
     userName,
     userPosition,
     userAvatar,
+    meetingStartTime,
+    joinedAt,
+    leftAt,
+    durationMinutes,
+    lateMinutes,
+    reasonDeadline,
+    canSubmitReason,
   ];
 }

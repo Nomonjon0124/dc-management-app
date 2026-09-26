@@ -268,6 +268,7 @@ class MeetingRemoteDataSourceImpl implements MeetingRemoteDataSource {
     if (filter.projectId != null) 'project': filter.projectId,
     if (filter.search?.trim().isNotEmpty ?? false)
       'search': filter.search!.trim(),
+    if (filter.uid?.trim().isNotEmpty ?? false) 'uid': filter.uid!.trim(),
     if (filter.startDateGte != null)
       'start_date_gte': _dateOnly(filter.startDateGte!),
     if (filter.startDateLte != null)

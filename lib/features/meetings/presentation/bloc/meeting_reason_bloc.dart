@@ -114,11 +114,12 @@ class MeetingReasonBloc extends Bloc<MeetingReasonEvent, MeetingReasonState> {
           attendanceId: mine?.id,
           myAttendance: mine,
           isOrganizer: isOrganizer,
-          // Tashkilotchi ro'yxati: faqat qatnashmaganlar.
+          // Tashkilotchi ro'yxati: qatnashmaganlar va 5 daqiqadan ko'p
+          // kechikkanlar backend qoidalariga ko'ra ko'rib chiqiladi.
           rows: isOrganizer
               ? [
                   for (final a in attendance)
-                    if (!a.isAttended) a,
+                    if (!a.isAttended || a.lateMinutes > 5) a,
                 ]
               : const [],
         ),
@@ -175,8 +176,7 @@ class MeetingReasonBloc extends Bloc<MeetingReasonEvent, MeetingReasonState> {
         state.copyWith(
           approvingId: 0,
           rows: [
-            for (final row in state.rows)
-              row.id == updated.id ? updated : row,
+            for (final row in state.rows) row.id == updated.id ? updated : row,
           ],
           rejectedIds: event.approved
               ? state.rejectedIds

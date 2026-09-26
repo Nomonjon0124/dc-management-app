@@ -13,7 +13,7 @@ abstract interface class MeetingRoomRepository {
 
   Future<void> reject(int userId);
 
-  Future<void> requestToken();
+  Future<void> requestToken({String? deviceId, String? deviceName});
 
   Future<void> connectMedia(MeetingRoomToken token);
 
@@ -26,6 +26,22 @@ abstract interface class MeetingRoomRepository {
   Future<void> sendChatMessage(String message);
 
   Future<void> sendReaction(String reaction);
+
+  Future<void> moderateTrack({
+    required String targetIdentity,
+    required String trackSource,
+  });
+
+  Future<void> requestTrackUnmute({
+    required String targetIdentity,
+    required String trackSource,
+  });
+
+  Future<void> respondTrackUnmute({
+    required String requestId,
+    required String trackSource,
+    required bool accept,
+  });
 
   Future<void> setScreenShareEnabled(bool enabled);
 

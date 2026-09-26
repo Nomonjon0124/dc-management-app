@@ -173,13 +173,23 @@ class LiveKitMediaService {
     for (final participant in room.remoteParticipants.values) {
       result.add(_participant(participant, isLocal: false));
     }
-    return result;
+    return _groupParticipants(result);
   }
 
   MeetingRoomParticipant _participant(
     Participant participant, {
     required bool isLocal,
   }) {
+    Map<String, dynamic> metadata = const {};
+    try {
+      final decoded = jsonDecode(participant.metadata ?? '');
+      if (decoded is Map) metadata = decoded.cast<String, dynamic>();
+    } on Object {
+      // Older tokens may not contain JSON metadata.
+    }
+    final userId =
+        int.tryParse(metadata['user_id']?.toString() ?? '') ??
+        _userIdFromIdentity(participant.identity);
     final audio = participant.getTrackPublicationBySource(
       TrackSource.microphone,
     );
@@ -198,7 +208,63 @@ class LiveKitMediaService {
       videoTrackSid: video?.sid,
       screenShareTrackSid: screen?.sid,
       screenSharing: screen?.muted == false,
+      userId: userId,
+      deviceId: metadata['device_id']?.toString(),
+      deviceName: metadata['device_name']?.toString(),
+      sessionIdentities: [participant.identity],
     );
+  }
+
+  int? _userIdFromIdentity(String identity) {
+    final match = RegExp(r'(?:user|uid)[-_]?(\d+)').firstMatch(identity);
+    if (match != null) return int.tryParse(match.group(1)!);
+    final leadingNumber = RegExp(r'^(\d+)(?:[-_]|$)').firstMatch(identity);
+    return leadingNumber == null ? null : int.tryParse(leadingNumber.group(1)!);
+  }
+
+  List<MeetingRoomParticipant> _groupParticipants(
+    List<MeetingRoomParticipant> sessions,
+  ) {
+    final grouped = <String, List<MeetingRoomParticipant>>{};
+    for (final session in sessions) {
+      final key = session.userId?.toString() ?? session.identity;
+      grouped.putIfAbsent(key, () => []).add(session);
+    }
+
+    return grouped.values
+        .map((group) {
+          final ordered = [...group]
+            ..sort((a, b) {
+              final camera =
+                  (b.cameraEnabled ? 1 : 0) - (a.cameraEnabled ? 1 : 0);
+              if (camera != 0) return camera;
+              final microphone =
+                  (b.microphoneEnabled ? 1 : 0) - (a.microphoneEnabled ? 1 : 0);
+              if (microphone != 0) return microphone;
+              return a.identity.compareTo(b.identity);
+            });
+          final selected = ordered.first;
+          return MeetingRoomParticipant(
+            identity: selected.identity,
+            name: selected.name,
+            isLocal: group.any((item) => item.isLocal),
+            isSpeaking: group.any((item) => item.isSpeaking),
+            microphoneEnabled: group.any((item) => item.microphoneEnabled),
+            cameraEnabled: group.any((item) => item.cameraEnabled),
+            audioTrackSid: selected.audioTrackSid,
+            videoTrackSid: selected.videoTrackSid,
+            screenShareTrackSid: selected.screenShareTrackSid,
+            handRaised: group.any((item) => item.handRaised),
+            screenSharing: group.any((item) => item.screenSharing),
+            userId: selected.userId,
+            deviceId: selected.deviceId,
+            deviceName: selected.deviceName,
+            sessionIdentities: [
+              for (final item in group) ...item.sessionIdentities,
+            ],
+          );
+        })
+        .toList(growable: false);
   }
 
   bool _localMicrophoneEnabled() {

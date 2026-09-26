@@ -1918,4 +1918,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get meetingCallSendMessage => 'Send message';
+
+  @override
+  String meetingCallLateReason(int minutes) {
+    return 'Late by $minutes minutes';
+  }
 }

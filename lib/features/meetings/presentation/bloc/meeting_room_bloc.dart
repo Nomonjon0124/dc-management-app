@@ -31,6 +31,9 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     on<MeetingRoomHandToggled>(_onHandToggled);
     on<MeetingRoomChatMessageSent>(_onChatMessageSent);
     on<MeetingRoomReactionSent>(_onReactionSent);
+    on<MeetingRoomParticipantMuted>(_onParticipantMuted);
+    on<MeetingRoomUnmuteRequested>(_onUnmuteRequested);
+    on<MeetingRoomUnmuteResponseSent>(_onUnmuteResponseSent);
     on<MeetingRoomScreenShareToggled>(_onScreenShareToggled);
     on<MeetingRoomAudioInputSelected>(_onAudioInputSelected);
     on<MeetingRoomAudioOutputSelected>(_onAudioOutputSelected);
@@ -306,6 +309,59 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     }
   }
 
+  Future<void> _onParticipantMuted(
+    MeetingRoomParticipantMuted event,
+    Emitter<MeetingRoomState> emit,
+  ) async {
+    if (!state.isHost || state.phase != MeetingRoomPhase.connected) return;
+    try {
+      await _repository.moderateTrack(
+        targetIdentity: event.targetIdentity,
+        trackSource: event.trackSource,
+      );
+    } on Object catch (error) {
+      emit(state.copyWith(errorMessage: error.toString()));
+    }
+  }
+
+  Future<void> _onUnmuteRequested(
+    MeetingRoomUnmuteRequested event,
+    Emitter<MeetingRoomState> emit,
+  ) async {
+    if (!state.isHost || state.phase != MeetingRoomPhase.connected) return;
+    try {
+      await _repository.requestTrackUnmute(
+        targetIdentity: event.targetIdentity,
+        trackSource: event.trackSource,
+      );
+    } on Object catch (error) {
+      emit(state.copyWith(errorMessage: error.toString()));
+    }
+  }
+
+  Future<void> _onUnmuteResponseSent(
+    MeetingRoomUnmuteResponseSent event,
+    Emitter<MeetingRoomState> emit,
+  ) async {
+    try {
+      await _repository.respondTrackUnmute(
+        requestId: event.requestId,
+        trackSource: event.trackSource,
+        accept: event.accept,
+      );
+      emit(
+        state.copyWith(
+          pendingUnmuteRequests: [
+            for (final request in state.pendingUnmuteRequests)
+              if (request.requestId != event.requestId) request,
+          ],
+        ),
+      );
+    } on Object catch (error) {
+      emit(state.copyWith(errorMessage: error.toString()));
+    }
+  }
+
   Future<void> _onScreenShareToggled(
     MeetingRoomScreenShareToggled event,
     Emitter<MeetingRoomState> emit,
@@ -388,6 +444,10 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
               screenShareTrackSid: participant.screenShareTrackSid,
               handRaised: raised,
               screenSharing: participant.screenSharing,
+              userId: participant.userId,
+              deviceId: participant.deviceId,
+              deviceName: participant.deviceName,
+              sessionIdentities: participant.sessionIdentities,
             )
           : participant,
   ];
@@ -411,9 +471,77 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
               screenShareTrackSid: participant.screenShareTrackSid,
               handRaised: raised,
               screenSharing: participant.screenSharing,
+              userId: participant.userId,
+              deviceId: participant.deviceId,
+              deviceName: participant.deviceName,
+              sessionIdentities: participant.sessionIdentities,
             )
           : participant,
   ];
+
+  List<MeetingRoomParticipant> _withUserHand(
+    List<MeetingRoomParticipant> participants,
+    int userId,
+    bool raised,
+  ) => [
+    for (final participant in participants)
+      participant.userId == userId
+          ? MeetingRoomParticipant(
+              identity: participant.identity,
+              name: participant.name,
+              isLocal: participant.isLocal,
+              isSpeaking: participant.isSpeaking,
+              microphoneEnabled: participant.microphoneEnabled,
+              cameraEnabled: participant.cameraEnabled,
+              audioTrackSid: participant.audioTrackSid,
+              videoTrackSid: participant.videoTrackSid,
+              screenShareTrackSid: participant.screenShareTrackSid,
+              handRaised: raised,
+              screenSharing: participant.screenSharing,
+              userId: participant.userId,
+              deviceId: participant.deviceId,
+              deviceName: participant.deviceName,
+              sessionIdentities: participant.sessionIdentities,
+            )
+          : participant,
+  ];
+
+  List<MeetingRoomParticipant> _withTrackMuted(
+    List<MeetingRoomParticipant> participants, {
+    required String targetIdentity,
+    required String trackSource,
+    required bool muted,
+  }) => [
+    for (final participant in participants)
+      participant.identity == targetIdentity ||
+              participant.sessionIdentities.contains(targetIdentity)
+          ? MeetingRoomParticipant(
+              identity: participant.identity,
+              name: participant.name,
+              isLocal: participant.isLocal,
+              isSpeaking: participant.isSpeaking,
+              microphoneEnabled: trackSource == 'microphone'
+                  ? !muted
+                  : participant.microphoneEnabled,
+              cameraEnabled: trackSource == 'camera'
+                  ? !muted
+                  : participant.cameraEnabled,
+              audioTrackSid: participant.audioTrackSid,
+              videoTrackSid: participant.videoTrackSid,
+              screenShareTrackSid: participant.screenShareTrackSid,
+              handRaised: participant.handRaised,
+              screenSharing: participant.screenSharing,
+              userId: participant.userId,
+              deviceId: participant.deviceId,
+              deviceName: participant.deviceName,
+              sessionIdentities: participant.sessionIdentities,
+            )
+          : participant,
+  ];
+
+  bool _isLocalUser(int userId) => state.participants.any(
+    (participant) => participant.isLocal && participant.userId == userId,
+  );
 
   MeetingRoomParticipant? _localParticipant(
     List<MeetingRoomParticipant> participants,
@@ -447,6 +575,10 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
                 screenShareTrackSid: participant.screenShareTrackSid,
                 handRaised: previous[participant.identity]!.handRaised,
                 screenSharing: participant.screenSharing,
+                userId: participant.userId,
+                deviceId: participant.deviceId,
+                deviceName: participant.deviceName,
+                sessionIdentities: participant.sessionIdentities,
               ),
     ];
   }
@@ -511,10 +643,97 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
         if (message.token != null) {
           await _connectMedia(message.token!, emit);
         }
+      case 'hand_raise_updated':
+        if (message.userId != null && message.raised != null) {
+          emit(
+            state.copyWith(
+              handRaised: _isLocalUser(message.userId!)
+                  ? message.raised
+                  : state.handRaised,
+              participants: _withUserHand(
+                state.participants,
+                message.userId!,
+                message.raised!,
+              ),
+            ),
+          );
+        }
+      case 'reaction_received':
+        if (message.reaction?.isNotEmpty == true) {
+          final reaction = MeetingRoomDataMessage(
+            type: 'reaction',
+            senderIdentity:
+                message.targetIdentity ??
+                message.userId?.toString() ??
+                'participant',
+            senderName: message.username ?? 'Foydalanuvchi',
+            reaction: message.reaction,
+            sentAt: message.raisedAt ?? DateTime.now(),
+          );
+          emit(
+            state.copyWith(
+              reactions: [...state.reactions, reaction].take(3).toList(),
+            ),
+          );
+        }
+      case 'track_moderation_changed':
+        if (message.targetIdentity != null && message.trackSource != null) {
+          emit(
+            state.copyWith(
+              participants: _withTrackMuted(
+                state.participants,
+                targetIdentity: message.targetIdentity!,
+                trackSource: message.trackSource!,
+                muted: message.muted ?? true,
+              ),
+            ),
+          );
+        }
+      case 'track_unmute_requested':
+        if (message.requestId != null && message.trackSource != null) {
+          final request = MeetingTrackUnmuteRequest(
+            requestId: message.requestId!,
+            trackSource: message.trackSource!,
+            targetIdentity: message.targetIdentity,
+            fromUserId: message.fromUserId,
+            fromName: message.fromName,
+            expiresAt: message.expiresAt,
+          );
+          if (!state.pendingUnmuteRequests.any(
+            (item) => item.requestId == request.requestId,
+          )) {
+            emit(
+              state.copyWith(
+                pendingUnmuteRequests: [
+                  ...state.pendingUnmuteRequests,
+                  request,
+                ],
+              ),
+            );
+          }
+        }
+      case 'track_unmute_request_result':
+        if (message.requestId != null) {
+          emit(
+            state.copyWith(
+              pendingUnmuteRequests: [
+                for (final request in state.pendingUnmuteRequests)
+                  if (request.requestId != message.requestId) request,
+              ],
+            ),
+          );
+        }
       case 'meeting_ended':
         await _repository.close();
         emit(state.copyWith(phase: MeetingRoomPhase.ended));
       case 'error':
+        final terminal =
+            message.code == 4003 ||
+            message.code == 4004 ||
+            message.code == 401 ||
+            message.code == 403 ||
+            message.code == 404;
+        if (terminal) await _repository.close();
         emit(
           state.copyWith(
             phase: MeetingRoomPhase.failure,
