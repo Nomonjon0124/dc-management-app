@@ -1917,6 +1917,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get meetingCallStickersTitle => 'Stickers';
 
   @override
+  String get meetingCallStickersDuration => 'Visible for 3 seconds';
+
+  @override
+  String get meetingCallCloseStickers => 'Close stickers panel';
+
+  @override
   String get meetingCallSendMessage => 'Send message';
 
   @override

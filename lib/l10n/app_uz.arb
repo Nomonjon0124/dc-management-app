@@ -675,6 +675,8 @@
   "meetingCallEnableMicrophone": "Mikrofonni yoqish",
   "meetingCallEnableCamera": "Kamerani yoqish",
   "meetingCallStickersTitle": "Stikerlar",
+  "meetingCallStickersDuration": "3 soniya ko‘rinadi",
+  "meetingCallCloseStickers": "Stikerlar panelini yopish",
   "meetingCallSendMessage": "Xabar yuborish",
   "meetingCallLateReason": "Kechikish: {minutes} daqiqa",
   "@meetingCallLateReason": {

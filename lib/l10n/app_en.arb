@@ -672,6 +672,8 @@
   "meetingCallEnableMicrophone": "Turn on microphone",
   "meetingCallEnableCamera": "Turn on camera",
   "meetingCallStickersTitle": "Stickers",
+  "meetingCallStickersDuration": "Visible for 3 seconds",
+  "meetingCallCloseStickers": "Close stickers panel",
   "meetingCallSendMessage": "Send message",
   "meetingCallLateReason": "Late by {minutes} minutes",
   "@meetingCallLateReason": {

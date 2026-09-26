@@ -1547,6 +1547,7 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
   Widget _stickersPanel() {
     return MeetingCallStickersPanel(
       onSelected: (sticker) => _bloc.add(MeetingCallStickerSelected(sticker)),
+      onClosed: () => _bloc.add(const MeetingCallStickerPanelToggled()),
     );
   }
 

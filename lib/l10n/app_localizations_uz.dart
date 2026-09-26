@@ -1923,6 +1923,12 @@ class AppLocalizationsUz extends AppLocalizations {
   String get meetingCallStickersTitle => 'Stikerlar';
 
   @override
+  String get meetingCallStickersDuration => '3 soniya ko‘rinadi';
+
+  @override
+  String get meetingCallCloseStickers => 'Stikerlar panelini yopish';
+
+  @override
   String get meetingCallSendMessage => 'Xabar yuborish';
 
   @override

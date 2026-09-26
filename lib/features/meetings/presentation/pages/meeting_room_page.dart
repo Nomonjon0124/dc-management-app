@@ -140,8 +140,23 @@ class _MeetingRoomLookupPageState extends State<MeetingRoomLookupPage> {
   }
 }
 
-class _MeetingRoomView extends StatelessWidget {
+class _MeetingRoomView extends StatefulWidget {
   const _MeetingRoomView();
+
+  @override
+  State<_MeetingRoomView> createState() => _MeetingRoomViewState();
+}
+
+class _MeetingRoomViewState extends State<_MeetingRoomView> {
+  bool _stickersOpen = false;
+
+  void _toggleStickers() {
+    setState(() => _stickersOpen = !_stickersOpen);
+  }
+
+  void _closeStickers() {
+    if (_stickersOpen) setState(() => _stickersOpen = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -563,163 +578,190 @@ class _MeetingRoomView extends StatelessWidget {
         : state.participants.length > 1 && !compact
         ? 2
         : 1;
-    return Column(
+    return Stack(
       children: [
-        MeetingCallTopBar(
-          title: state.title.isEmpty ? l10n.meetingCallInMeeting : state.title,
-          participantCount: '${state.participants.length}',
-          onTitleTap: () => _showDetails(context, state),
-          onEndTap: () => _showExit(context, state),
-          onStickerTap: () => _showStickers(context),
-          onParticipantsTap: () => _showParticipants(context, state),
-          endLabel: l10n.meetingCallEnd,
-          stickerLabel: l10n.meetingCallStickers,
-          showSticker: true,
-        ),
-        if (displayError != null)
-          Padding(
-            padding: EdgeInsets.only(top: 4.h),
-            child: displayError
-                .s(12.sp)
-                .w(500)
-                .c(AppColors.of(context).errorStrong)
-                .a(TextAlign.center)
-                .copyWith(maxLines: 2, overflow: TextOverflow.ellipsis),
-          ),
-        SizedBox(height: 8.h),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            child: MeetingCallStage(
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: _speakerStage(
-                      context,
-                      state,
-                      media,
-                      crossAxisCount,
-                      compact,
-                      l10n,
-                    ),
-                  ),
-                  if (state.participants.any((p) => p.isLocal))
-                    Positioned(
-                      right: 12.w,
-                      top: 12.h,
-                      child: SizedBox(
-                        width: 96.w,
-                        height: 128.h,
-                        child: _participantTile(
+        Column(
+          children: [
+            MeetingCallTopBar(
+              title: state.title.isEmpty
+                  ? l10n.meetingCallInMeeting
+                  : state.title,
+              participantCount: '${state.participants.length}',
+              onTitleTap: () => _showDetails(context, state),
+              onEndTap: () => _showExit(context, state),
+              onStickerTap: _toggleStickers,
+              onParticipantsTap: () => _showParticipants(context, state),
+              endLabel: l10n.meetingCallEnd,
+              stickerLabel: l10n.meetingCallStickers,
+              showSticker: true,
+            ),
+            if (displayError != null)
+              Padding(
+                padding: EdgeInsets.only(top: 4.h),
+                child: displayError
+                    .s(12.sp)
+                    .w(500)
+                    .c(AppColors.of(context).errorStrong)
+                    .a(TextAlign.center)
+                    .copyWith(maxLines: 2, overflow: TextOverflow.ellipsis),
+              ),
+            SizedBox(height: 8.h),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: MeetingCallStage(
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: _speakerStage(
                           context,
-                          state.participants.firstWhere((p) => p.isLocal),
+                          state,
                           media,
+                          crossAxisCount,
+                          compact,
                           l10n,
-                          meeting: state.meeting,
-                          avatarSize: 40,
-                          backgroundColor: AppColors.of(
-                            context,
-                          ).meetingLocalTile,
-                          showMicrophone: false,
-                          compactLabel: true,
                         ),
                       ),
-                    ),
-                  if (state.isHost && state.pendingRequests.isNotEmpty)
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      top: 0,
-                      child: _pendingRequestOverlay(context, state),
-                    ),
-                  if (!state.isHost && state.pendingUnmuteRequests.isNotEmpty)
-                    Positioned(
-                      left: 12.w,
-                      right: 12.w,
-                      bottom: 12.h,
-                      child: _unmuteRequestOverlay(context, state),
-                    ),
-                  if (state.handRaised)
-                    Positioned(
-                      top: 16.h,
-                      left: 12.w,
-                      right: 12.w,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: AppColors.of(context).successSoft,
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 10.h,
-                          ),
-                          child: Row(
-                            children: [
-                              Assets.icons.meetingHand.svg(
-                                width: 20.w,
-                                height: 20.w,
-                                colorFilter: ColorFilter.mode(
-                                  AppColors.of(context).successStrong,
-                                  BlendMode.srcIn,
-                                ),
-                              ),
-                              SizedBox(width: 8.w),
-                              Expanded(
-                                child: l10n.meetingCallRaisedNotice
-                                    .s(13.sp)
-                                    .w(700)
-                                    .c(AppColors.of(context).textStrong),
-                              ),
-                            ],
+                      if (state.participants.any((p) => p.isLocal))
+                        Positioned(
+                          right: 12.w,
+                          top: 12.h,
+                          child: SizedBox(
+                            width: 96.w,
+                            height: 128.h,
+                            child: _participantTile(
+                              context,
+                              state.participants.firstWhere((p) => p.isLocal),
+                              media,
+                              l10n,
+                              meeting: state.meeting,
+                              avatarSize: 40,
+                              backgroundColor: AppColors.of(
+                                context,
+                              ).meetingLocalTile,
+                              showMicrophone: false,
+                              compactLabel: true,
+                            ),
                           ),
                         ),
+                      if (state.isHost && state.pendingRequests.isNotEmpty)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          top: 0,
+                          child: _pendingRequestOverlay(context, state),
+                        ),
+                      if (!state.isHost &&
+                          state.pendingUnmuteRequests.isNotEmpty)
+                        Positioned(
+                          left: 12.w,
+                          right: 12.w,
+                          bottom: 12.h,
+                          child: _unmuteRequestOverlay(context, state),
+                        ),
+                      if (state.handRaised)
+                        Positioned(
+                          top: 16.h,
+                          left: 12.w,
+                          right: 12.w,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: AppColors.of(context).successSoft,
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12.w,
+                                vertical: 10.h,
+                              ),
+                              child: Row(
+                                children: [
+                                  Assets.icons.meetingHand.svg(
+                                    width: 20.w,
+                                    height: 20.w,
+                                    colorFilter: ColorFilter.mode(
+                                      AppColors.of(context).successStrong,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  Expanded(
+                                    child: l10n.meetingCallRaisedNotice
+                                        .s(13.sp)
+                                        .w(700)
+                                        .c(AppColors.of(context).textStrong),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      MeetingLiveReactionOverlay(
+                        reactions: state.reactions,
+                        onExpired: (reactionId) => context
+                            .read<MeetingRoomBloc>()
+                            .add(MeetingRoomReactionExpired(reactionId)),
                       ),
-                    ),
-                  MeetingLiveReactionOverlay(
-                    reactions: state.reactions,
-                    onExpired: (reactionId) => context
-                        .read<MeetingRoomBloc>()
-                        .add(MeetingRoomReactionExpired(reactionId)),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
+            if (state.phase == MeetingRoomPhase.reconnecting)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.h),
+                child: l10n.meetingCallWaitingHint
+                    .s(12.sp)
+                    .w(500)
+                    .c(AppColors.of(context).textSub)
+                    .a(TextAlign.center),
+              ),
+            SizedBox(height: 8.h),
+            MeetingCallControlBar(
+              microphoneOn: state.microphoneEnabled,
+              cameraOn: state.cameraEnabled,
+              handRaised: state.handRaised,
+              onMicrophone: () => context.read<MeetingRoomBloc>().add(
+                const MeetingRoomMicrophoneToggled(),
+              ),
+              onCamera: () => context.read<MeetingRoomBloc>().add(
+                const MeetingRoomCameraToggled(),
+              ),
+              onHand: () => context.read<MeetingRoomBloc>().add(
+                const MeetingRoomHandToggled(),
+              ),
+              onMore: () => _showMore(context, state),
+              onLeave: () => _showExit(context, state),
+              microphoneLabel: l10n.meetingCallMicrophone,
+              cameraLabel: l10n.meetingCallCamera,
+              handLabel: l10n.meetingCallRaiseHand,
+              moreLabel: l10n.meetingCallMore,
+              leaveLabel: l10n.meetingCallLeave,
+              onMicrophoneMenu: () => _showDevices(context, state),
+              onCameraMenu: () => _showCamera(context, state),
+            ),
+          ],
         ),
-        if (state.phase == MeetingRoomPhase.reconnecting)
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.h),
-            child: l10n.meetingCallWaitingHint
-                .s(12.sp)
-                .w(500)
-                .c(AppColors.of(context).textSub)
-                .a(TextAlign.center),
+        if (_stickersOpen) ...[
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _closeStickers,
+              child: const SizedBox.expand(),
+            ),
           ),
-        SizedBox(height: 8.h),
-        MeetingCallControlBar(
-          microphoneOn: state.microphoneEnabled,
-          cameraOn: state.cameraEnabled,
-          handRaised: state.handRaised,
-          onMicrophone: () => context.read<MeetingRoomBloc>().add(
-            const MeetingRoomMicrophoneToggled(),
+          Positioned(
+            left: 8.w,
+            right: 8.w,
+            bottom: 78.h,
+            child: MeetingCallStickersPanel(
+              onSelected: (reaction) => context.read<MeetingRoomBloc>().add(
+                MeetingRoomReactionSent(reaction),
+              ),
+              onClosed: _closeStickers,
+            ),
           ),
-          onCamera: () => context.read<MeetingRoomBloc>().add(
-            const MeetingRoomCameraToggled(),
-          ),
-          onHand: () => context.read<MeetingRoomBloc>().add(
-            const MeetingRoomHandToggled(),
-          ),
-          onMore: () => _showMore(context, state),
-          onLeave: () => _showExit(context, state),
-          microphoneLabel: l10n.meetingCallMicrophone,
-          cameraLabel: l10n.meetingCallCamera,
-          handLabel: l10n.meetingCallRaiseHand,
-          moreLabel: l10n.meetingCallMore,
-          leaveLabel: l10n.meetingCallLeave,
-          onMicrophoneMenu: () => _showDevices(context, state),
-          onCameraMenu: () => _showCamera(context, state),
-        ),
+        ],
       ],
     );
   }
@@ -1261,7 +1303,7 @@ class _MeetingRoomView extends StatelessWidget {
                   label: l10n.meetingCallStickers,
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    _showStickers(context);
+                    _toggleStickers();
                   },
                 ),
                 _sheetAction(
@@ -1326,26 +1368,6 @@ class _MeetingRoomView extends StatelessWidget {
                 MeetingRoomChatMessageSent(message),
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showStickers(BuildContext context) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.of(context).overlaySurface,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
-          child: MeetingCallStickersPanel(
-            onSelected: (reaction) {
-              context.read<MeetingRoomBloc>().add(
-                MeetingRoomReactionSent(reaction),
-              );
-              Navigator.pop(sheetContext);
-            },
           ),
         ),
       ),

@@ -3812,6 +3812,18 @@ abstract class AppLocalizations {
   /// **'Stikerlar'**
   String get meetingCallStickersTitle;
 
+  /// No description provided for @meetingCallStickersDuration.
+  ///
+  /// In uz, this message translates to:
+  /// **'3 soniya ko‘rinadi'**
+  String get meetingCallStickersDuration;
+
+  /// No description provided for @meetingCallCloseStickers.
+  ///
+  /// In uz, this message translates to:
+  /// **'Stikerlar panelini yopish'**
+  String get meetingCallCloseStickers;
+
   /// No description provided for @meetingCallSendMessage.
   ///
   /// In uz, this message translates to:

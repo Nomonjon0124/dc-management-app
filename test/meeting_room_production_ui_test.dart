@@ -133,6 +133,36 @@ void main() {
     expect(find.text('🎉'), findsNothing);
   });
 
+  testWidgets(
+    'sticker panel stays open after selection and closes explicitly',
+    (tester) async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Qo‘shilish'));
+      await tester.tap(find.text('Qo‘shilish'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('Stikerlar'));
+      await tester.pump();
+
+      final closeButton = find.bySemanticsLabel('Stikerlar panelini yopish');
+      expect(closeButton, findsOneWidget);
+      await tester.tap(find.text('👍'));
+      await tester.pump();
+      expect(closeButton, findsOneWidget);
+
+      await tester.tap(closeButton);
+      await tester.pump();
+      expect(closeButton, findsNothing);
+
+      await tester.tap(find.bySemanticsLabel('Stikerlar'));
+      await tester.pump();
+      await tester.tapAt(const Offset(4, 100));
+      await tester.pump();
+      expect(closeButton, findsNothing);
+    },
+  );
+
   testWidgets('compact participant label fits a local mini-card', (
     tester,
   ) async {
