@@ -1028,6 +1028,8 @@ class _MeetingRoomViewState extends State<_MeetingRoomView> {
         smallLabel: smallLabel,
         avatarAlignment: avatarAlignment,
         avatarPadding: avatarPadding,
+        videoFit: meetingParticipantVideoFit(screenShare: screenShare),
+        enableTemporaryZoom: screenShare,
       ),
     );
     return GestureDetector(

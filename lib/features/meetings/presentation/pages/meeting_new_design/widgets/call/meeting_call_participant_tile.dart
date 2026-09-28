@@ -8,6 +8,9 @@ import '../../../../../../../core/gen/assets.gen.dart';
 import '../../../../../../../core/widgets/tui_avatar.dart';
 import '../common/meeting_preview_avatar.dart';
 
+VideoViewFit meetingParticipantVideoFit({required bool screenShare}) =>
+    screenShare ? VideoViewFit.contain : VideoViewFit.cover;
+
 class MeetingCallParticipantTile extends StatelessWidget {
   const MeetingCallParticipantTile({
     super.key,
@@ -28,6 +31,8 @@ class MeetingCallParticipantTile extends StatelessWidget {
     this.smallLabel = false,
     this.avatarAlignment = Alignment.center,
     this.avatarPadding = EdgeInsets.zero,
+    this.videoFit = VideoViewFit.cover,
+    this.enableTemporaryZoom = false,
   });
 
   final String name;
@@ -47,6 +52,8 @@ class MeetingCallParticipantTile extends StatelessWidget {
   final bool smallLabel;
   final Alignment avatarAlignment;
   final EdgeInsets avatarPadding;
+  final VideoViewFit videoFit;
+  final bool enableTemporaryZoom;
 
   @override
   Widget build(BuildContext context) {
@@ -73,10 +80,7 @@ class MeetingCallParticipantTile extends StatelessWidget {
         children: [
           Positioned.fill(
             child: track != null && cameraOn
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12.r),
-                    child: VideoTrackRenderer(track!, fit: VideoViewFit.cover),
-                  )
+                ? _videoTrack(track!)
                 : Align(
                     alignment: avatarAlignment,
                     child: Padding(
@@ -123,6 +127,15 @@ class MeetingCallParticipantTile extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _videoTrack(VideoTrack track) {
+    final video = ClipRRect(
+      borderRadius: BorderRadius.circular(12.r),
+      child: VideoTrackRenderer(track, fit: videoFit),
+    );
+    if (!enableTemporaryZoom) return video;
+    return MeetingTemporaryZoomViewer(resetKey: track, child: video);
   }
 
   Widget _nameLabel(String name, AppColors colors, {bool smallLabel = false}) {
@@ -190,6 +203,75 @@ class MeetingCallParticipantTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class MeetingTemporaryZoomViewer extends StatefulWidget {
+  const MeetingTemporaryZoomViewer({
+    super.key,
+    required this.child,
+    this.resetKey,
+    this.transformationController,
+    this.maxScale = 3,
+  });
+
+  final Widget child;
+  final Object? resetKey;
+  final TransformationController? transformationController;
+  final double maxScale;
+
+  @override
+  State<MeetingTemporaryZoomViewer> createState() =>
+      _MeetingTemporaryZoomViewerState();
+}
+
+class _MeetingTemporaryZoomViewerState
+    extends State<MeetingTemporaryZoomViewer> {
+  late TransformationController _controller;
+  var _ownsController = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _setController(widget.transformationController);
+  }
+
+  @override
+  void didUpdateWidget(covariant MeetingTemporaryZoomViewer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.transformationController != widget.transformationController) {
+      if (_ownsController) _controller.dispose();
+      _setController(widget.transformationController);
+    }
+    if (!identical(oldWidget.resetKey, widget.resetKey)) _reset();
+  }
+
+  @override
+  void dispose() {
+    if (_ownsController) _controller.dispose();
+    super.dispose();
+  }
+
+  void _setController(TransformationController? controller) {
+    _controller = controller ?? TransformationController();
+    _ownsController = controller == null;
+  }
+
+  void _reset() {
+    _controller.value = Matrix4.identity();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractiveViewer(
+      transformationController: _controller,
+      minScale: 1,
+      maxScale: widget.maxScale,
+      scaleEnabled: true,
+      panEnabled: false,
+      onInteractionEnd: (_) => _reset(),
+      child: widget.child,
     );
   }
 }
