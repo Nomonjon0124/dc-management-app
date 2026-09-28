@@ -25,6 +25,7 @@ class MeetingCallParticipantTile extends StatelessWidget {
     this.showMicrophone = true,
     this.showCamera = false,
     this.compactLabel = false,
+    this.smallLabel = false,
     this.avatarAlignment = Alignment.center,
     this.avatarPadding = EdgeInsets.zero,
   });
@@ -43,6 +44,7 @@ class MeetingCallParticipantTile extends StatelessWidget {
   final bool showMicrophone;
   final bool showCamera;
   final bool compactLabel;
+  final bool smallLabel;
   final Alignment avatarAlignment;
   final EdgeInsets avatarPadding;
 
@@ -56,11 +58,14 @@ class MeetingCallParticipantTile extends StatelessWidget {
             ? LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [colors.accentStrong, colors.chartNeutral],
+                colors: [
+                  colors.accentStrong.withValues(alpha: 0.38),
+                  Colors.transparent,
+                ],
               )
             : null,
         border: active
-            ? Border.all(color: colors.accentSoft, width: 2.w)
+            ? Border.all(color: colors.accentSoft, width: 2.5.w)
             : null,
         borderRadius: BorderRadius.circular(12.r),
       ),
@@ -107,62 +112,55 @@ class MeetingCallParticipantTile extends StatelessWidget {
             left: 12.w,
             right: 12.w,
             bottom: 16.h,
-            child: compactLabel
-                ? Align(
-                    alignment: Alignment.bottomLeft,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: 220.w),
-                      child: _nameLabel(
-                        name,
-                        colors,
-                        mainAxisSize: MainAxisSize.min,
-                      ),
-                    ),
-                  )
-                : _nameLabel(name, colors),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 280.w),
+                child: _nameLabel(name, colors, smallLabel: smallLabel),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _nameLabel(
-    String name,
-    AppColors colors, {
-    MainAxisSize mainAxisSize = MainAxisSize.max,
-  }) {
+  Widget _nameLabel(String name, AppColors colors, {bool smallLabel = false}) {
     final labelText = name
-        .s(12.sp)
+        .s((smallLabel ? 11 : 13).sp)
         .w(500)
         .c(colors.textWhite)
         .copyWith(maxLines: 1, overflow: TextOverflow.ellipsis);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.black.withValues(alpha: 0.58),
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular((smallLabel ? 6 : 8).r),
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: (smallLabel ? 8 : 12).w,
+          vertical: (smallLabel ? 4 : 6).h,
+        ),
         child: Row(
-          mainAxisSize: mainAxisSize,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            if (mainAxisSize == MainAxisSize.min)
-              Flexible(child: labelText)
-            else
-              Expanded(child: labelText),
+            Flexible(child: labelText),
             if (showMicrophone) ...[
               SizedBox(width: 6.w),
-              (microphoneOn
-                      ? Assets.icons.meetingMic
-                      : Assets.icons.meetingMicOff)
-                  .svg(
-                    width: 14.w,
-                    height: 14.w,
-                    colorFilter: ColorFilter.mode(
-                      colors.iconWhite,
-                      BlendMode.srcIn,
+              if (active && microphoneOn)
+                _SpeakingBars(color: colors.accentSoft)
+              else
+                (microphoneOn
+                        ? Assets.icons.meetingMic
+                        : Assets.icons.meetingMicOff)
+                    .svg(
+                      width: 14.w,
+                      height: 14.w,
+                      colorFilter: ColorFilter.mode(
+                        colors.iconWhite,
+                        BlendMode.srcIn,
+                      ),
                     ),
-                  ),
             ],
             if (handRaised) ...[
               SizedBox(width: 6.w),
@@ -192,6 +190,66 @@ class MeetingCallParticipantTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _SpeakingBars extends StatefulWidget {
+  const _SpeakingBars({required this.color});
+
+  final Color color;
+
+  @override
+  State<_SpeakingBars> createState() => _SpeakingBarsState();
+}
+
+class _SpeakingBarsState extends State<_SpeakingBars>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 620),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final progress = Curves.easeInOut.transform(_controller.value);
+        final heights = [
+          5.h + (5.h * progress),
+          7.h + (7.h * progress),
+          5.h + (4.h * progress),
+        ];
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            for (var index = 0; index < heights.length; index++) ...[
+              if (index > 0) SizedBox(width: 2.w),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: widget.color,
+                  borderRadius: BorderRadius.circular(1.r),
+                ),
+                child: SizedBox(width: 2.w, height: heights[index]),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 }

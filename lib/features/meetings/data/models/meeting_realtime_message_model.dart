@@ -44,6 +44,28 @@ class MeetingRealtimeMessageModel extends MeetingRealtimeMessage {
     final serverUrl = tokenMap['server_url']?.toString();
     final roomName = tokenMap['room_name']?.toString();
     final tokenValue = tokenMap['token']?.toString();
+    Map<String, dynamic>? userMap(dynamic value) {
+      if (value is Map) return value.cast<String, dynamic>();
+      return null;
+    }
+
+    final requester =
+        userMap(json['user']) ??
+        userMap(json['user_info']) ??
+        userMap(json['participant']) ??
+        userMap(json['requester']);
+    dynamic userValue(List<String> keys) {
+      for (final key in keys) {
+        final value = json[key];
+        if (value != null && value.toString().isNotEmpty) return value;
+      }
+      for (final key in keys) {
+        final value = requester?[key];
+        if (value != null && value.toString().isNotEmpty) return value;
+      }
+      return null;
+    }
+
     final token =
         serverUrl != null &&
             serverUrl.isNotEmpty &&
@@ -69,9 +91,9 @@ class MeetingRealtimeMessageModel extends MeetingRealtimeMessage {
       message: json['message']?.toString(),
       code: intValue(json['code']),
       status: json['status']?.toString(),
-      userId: intValue(json['user_id']),
-      username: (json['username'] ?? json['full_name'])?.toString(),
-      avatar: json['avatar']?.toString(),
+      userId: intValue(userValue(['user_id', 'id'])),
+      username: userValue(['username', 'full_name', 'name'])?.toString(),
+      avatar: userValue(['avatar', 'avatar_url', 'profile_image'])?.toString(),
       token: token,
       requestId: json['request_id']?.toString(),
       targetIdentity: json['target_identity']?.toString(),

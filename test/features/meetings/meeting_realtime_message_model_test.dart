@@ -54,6 +54,21 @@ void main() {
     expect(message.expiresAt, isNotNull);
   });
 
+  test('parses nested join requester data for the approval card', () {
+    final message = MeetingRealtimeMessageModel.fromJson({
+      'type': 'join_request',
+      'user': {
+        'id': 19,
+        'full_name': 'Ali Valiyev',
+        'avatar_url': 'https://example.com/avatar.png',
+      },
+    });
+
+    expect(message.userId, 19);
+    expect(message.username, 'Ali Valiyev');
+    expect(message.avatar, 'https://example.com/avatar.png');
+  });
+
   test('accepts string error codes from the websocket contract', () {
     final message = MeetingRealtimeMessageModel.fromJson({
       'type': 'error',

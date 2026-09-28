@@ -50,6 +50,7 @@ import 'features/meetings/presentation/bloc/meetings_bloc.dart';
 import 'features/meetings/presentation/bloc/meeting_new_design/meeting_call_preview_bloc.dart';
 import 'features/meetings/presentation/bloc/meeting_new_design/meeting_design_preview_bloc.dart';
 import 'features/meetings/presentation/bloc/meeting_room_bloc.dart';
+import 'features/meetings/presentation/services/meeting_sound_service.dart';
 import 'features/tasks/data/data_sources/task_remote_data_source.dart';
 import 'features/tasks/data/repository/task_repository_impl.dart';
 import 'features/tasks/domain/repository/task_repository.dart';
@@ -328,6 +329,7 @@ Future<void> configureDependencies() async {
       () => MeetingRealtimeDataSourceImpl(client: getIt(), logger: getIt()),
     )
     ..registerLazySingleton<LiveKitMediaService>(LiveKitMediaService.new)
+    ..registerFactory<MeetingSoundService>(MeetingSoundServiceImpl.new)
     ..registerLazySingleton<MeetingRoomRepository>(
       () => MeetingRoomRepositoryImpl(
         realtime: getIt(),
@@ -340,6 +342,7 @@ Future<void> configureDependencies() async {
         repository: getIt(),
         closeMeeting: getIt(),
         getMeeting: getIt(),
+        soundService: getIt(),
       ),
     );
 

@@ -99,7 +99,9 @@ class _MeetingChatSheetState extends State<MeetingChatSheet> {
     final local = _isLocal(message);
     final name = local
         ? AppLocalizations.of(context).meetingCallYou
-        : message.senderName;
+        : message.senderName.trim().isEmpty
+        ? AppLocalizations.of(context).meetingCallParticipant
+        : message.senderName.trim();
     final bubbleColor = local
         ? colors.accentStrong
         : colors.backgroundElevation1Alt;

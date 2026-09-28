@@ -14,6 +14,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart' as _svg;
 import 'package:vector_graphics/vector_graphics.dart' as _vg;
 
+class $AssetsAudioGen {
+  const $AssetsAudioGen();
+
+  /// Directory path: assets/audio/meeting
+  $AssetsAudioMeetingGen get meeting => const $AssetsAudioMeetingGen();
+}
+
 class $AssetsIconsGen {
   const $AssetsIconsGen();
 
@@ -259,6 +266,10 @@ class $AssetsIconsGen {
   SvgGenImage get meetingMicOff =>
       const SvgGenImage('assets/icons/meeting_mic_off.svg');
 
+  /// File path: assets/icons/meeting_pin.svg
+  SvgGenImage get meetingPin =>
+      const SvgGenImage('assets/icons/meeting_pin.svg');
+
   /// File path: assets/icons/meeting_power.svg
   SvgGenImage get meetingPower =>
       const SvgGenImage('assets/icons/meeting_power.svg');
@@ -349,6 +360,7 @@ class $AssetsIconsGen {
     meetingJoin,
     meetingMic,
     meetingMicOff,
+    meetingPin,
     meetingPower,
     meetingScreen,
     meetingSend,
@@ -445,9 +457,39 @@ class $AssetsImagesGen {
   ];
 }
 
+class $AssetsAudioMeetingGen {
+  const $AssetsAudioMeetingGen();
+
+  /// File path: assets/audio/meeting/chat_message.mp3
+  String get chatMessage => 'assets/audio/meeting/chat_message.mp3';
+
+  /// File path: assets/audio/meeting/hand_raised.mp3
+  String get handRaised => 'assets/audio/meeting/hand_raised.mp3';
+
+  /// File path: assets/audio/meeting/knock_request.mp3
+  String get knockRequest => 'assets/audio/meeting/knock_request.mp3';
+
+  /// File path: assets/audio/meeting/participant_joined.mp3
+  String get participantJoined => 'assets/audio/meeting/participant_joined.mp3';
+
+  /// File path: assets/audio/meeting/screen_share_start_stop.mp3
+  String get screenShareStartStop =>
+      'assets/audio/meeting/screen_share_start_stop.mp3';
+
+  /// List of all assets
+  List<String> get values => [
+    chatMessage,
+    handRaised,
+    knockRequest,
+    participantJoined,
+    screenShareStartStop,
+  ];
+}
+
 class Assets {
   const Assets._();
 
+  static const $AssetsAudioGen audio = $AssetsAudioGen();
   static const $AssetsIconsGen icons = $AssetsIconsGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
 }

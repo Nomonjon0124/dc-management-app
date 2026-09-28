@@ -1678,6 +1678,12 @@ class AppLocalizationsUz extends AppLocalizations {
   String get meetingCallLeave => 'Chiqish';
 
   @override
+  String get meetingCallPinParticipant => 'Ekranga mahkamlash';
+
+  @override
+  String get meetingCallUnpinParticipant => 'Mahkamlashni bekor qilish';
+
+  @override
   String get meetingCallYou => 'Siz';
 
   @override
@@ -1691,6 +1697,11 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get meetingCallRaisedNotice => 'Dilnoza Sattorova qo‘l ko‘tardi';
+
+  @override
+  String meetingCallRaisedBy(Object name) {
+    return '$name qo‘l ko‘tardi';
+  }
 
   @override
   String get meetingCallWantsToJoin => 'uchrashuvga qo‘shilmoqchi';
@@ -1837,6 +1848,9 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get meetingCallDirectJoin => 'To‘g‘ridan-to‘g‘ri ulanish';
+
+  @override
+  String get meetingCallMinutes => 'daqiqa';
 
   @override
   String get meetingCallMeetingUid => 'MT-0005';

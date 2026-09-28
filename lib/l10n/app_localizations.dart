@@ -3338,6 +3338,18 @@ abstract class AppLocalizations {
   /// **'Chiqish'**
   String get meetingCallLeave;
 
+  /// No description provided for @meetingCallPinParticipant.
+  ///
+  /// In uz, this message translates to:
+  /// **'Ekranga mahkamlash'**
+  String get meetingCallPinParticipant;
+
+  /// No description provided for @meetingCallUnpinParticipant.
+  ///
+  /// In uz, this message translates to:
+  /// **'Mahkamlashni bekor qilish'**
+  String get meetingCallUnpinParticipant;
+
   /// No description provided for @meetingCallYou.
   ///
   /// In uz, this message translates to:
@@ -3367,6 +3379,12 @@ abstract class AppLocalizations {
   /// In uz, this message translates to:
   /// **'Dilnoza Sattorova qo‘l ko‘tardi'**
   String get meetingCallRaisedNotice;
+
+  /// No description provided for @meetingCallRaisedBy.
+  ///
+  /// In uz, this message translates to:
+  /// **'{name} qo‘l ko‘tardi'**
+  String meetingCallRaisedBy(Object name);
 
   /// No description provided for @meetingCallWantsToJoin.
   ///
@@ -3649,6 +3667,12 @@ abstract class AppLocalizations {
   /// In uz, this message translates to:
   /// **'To‘g‘ridan-to‘g‘ri ulanish'**
   String get meetingCallDirectJoin;
+
+  /// No description provided for @meetingCallMinutes.
+  ///
+  /// In uz, this message translates to:
+  /// **'daqiqa'**
+  String get meetingCallMinutes;
 
   /// No description provided for @meetingCallMeetingUid.
   ///

@@ -70,6 +70,15 @@ class MeetingRoomHandToggled extends MeetingRoomEvent {
   const MeetingRoomHandToggled();
 }
 
+class MeetingRoomParticipantPinToggled extends MeetingRoomEvent {
+  const MeetingRoomParticipantPinToggled(this.identity);
+
+  final String identity;
+
+  @override
+  List<Object?> get props => [identity];
+}
+
 class MeetingRoomChatMessageSent extends MeetingRoomEvent {
   const MeetingRoomChatMessageSent(this.message);
 
@@ -95,6 +104,15 @@ class MeetingRoomReactionExpired extends MeetingRoomEvent {
 
   @override
   List<Object?> get props => [reactionId];
+}
+
+class MeetingRoomHandRaiseNoticeExpired extends MeetingRoomEvent {
+  const MeetingRoomHandRaiseNoticeExpired(this.noticeId);
+
+  final int noticeId;
+
+  @override
+  List<Object?> get props => [noticeId];
 }
 
 class MeetingRoomParticipantMuted extends MeetingRoomEvent {

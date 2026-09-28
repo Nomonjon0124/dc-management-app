@@ -18,10 +18,14 @@ class MeetingRoomState extends Equatable {
     this.microphoneEnabled = true,
     this.cameraEnabled = false,
     this.handRaised = false,
+    this.handRaiseNoticeName,
+    this.handRaiseNoticeId = 0,
+    this.pinnedParticipantIdentity,
     this.screenSharing = false,
     this.participants = const [],
     this.pendingRequests = const [],
     this.pendingUnmuteRequests = const [],
+    this.pendingUnmuteTargetKeys = const [],
     this.messages = const [],
     this.reactions = const [],
     this.audioInputs = const [],
@@ -45,10 +49,14 @@ class MeetingRoomState extends Equatable {
   final bool microphoneEnabled;
   final bool cameraEnabled;
   final bool handRaised;
+  final String? handRaiseNoticeName;
+  final int handRaiseNoticeId;
+  final String? pinnedParticipantIdentity;
   final bool screenSharing;
   final List<MeetingRoomParticipant> participants;
   final List<MeetingRoomJoinRequest> pendingRequests;
   final List<MeetingTrackUnmuteRequest> pendingUnmuteRequests;
+  final List<String> pendingUnmuteTargetKeys;
   final List<MeetingRoomDataMessage> messages;
   final List<MeetingRoomDataMessage> reactions;
   final List<MeetingMediaDevice> audioInputs;
@@ -77,10 +85,16 @@ class MeetingRoomState extends Equatable {
     bool? microphoneEnabled,
     bool? cameraEnabled,
     bool? handRaised,
+    String? handRaiseNoticeName,
+    int? handRaiseNoticeId,
+    bool clearHandRaiseNotice = false,
+    String? pinnedParticipantIdentity,
+    bool clearPinnedParticipant = false,
     bool? screenSharing,
     List<MeetingRoomParticipant>? participants,
     List<MeetingRoomJoinRequest>? pendingRequests,
     List<MeetingTrackUnmuteRequest>? pendingUnmuteRequests,
+    List<String>? pendingUnmuteTargetKeys,
     List<MeetingRoomDataMessage>? messages,
     List<MeetingRoomDataMessage>? reactions,
     List<MeetingMediaDevice>? audioInputs,
@@ -105,11 +119,20 @@ class MeetingRoomState extends Equatable {
       microphoneEnabled: microphoneEnabled ?? this.microphoneEnabled,
       cameraEnabled: cameraEnabled ?? this.cameraEnabled,
       handRaised: handRaised ?? this.handRaised,
+      handRaiseNoticeName: clearHandRaiseNotice
+          ? null
+          : handRaiseNoticeName ?? this.handRaiseNoticeName,
+      handRaiseNoticeId: handRaiseNoticeId ?? this.handRaiseNoticeId,
+      pinnedParticipantIdentity: clearPinnedParticipant
+          ? null
+          : pinnedParticipantIdentity ?? this.pinnedParticipantIdentity,
       screenSharing: screenSharing ?? this.screenSharing,
       participants: participants ?? this.participants,
       pendingRequests: pendingRequests ?? this.pendingRequests,
       pendingUnmuteRequests:
           pendingUnmuteRequests ?? this.pendingUnmuteRequests,
+      pendingUnmuteTargetKeys:
+          pendingUnmuteTargetKeys ?? this.pendingUnmuteTargetKeys,
       messages: messages ?? this.messages,
       reactions: reactions ?? this.reactions,
       audioInputs: audioInputs ?? this.audioInputs,
@@ -137,10 +160,14 @@ class MeetingRoomState extends Equatable {
     microphoneEnabled,
     cameraEnabled,
     handRaised,
+    handRaiseNoticeName,
+    handRaiseNoticeId,
+    pinnedParticipantIdentity,
     screenSharing,
     participants,
     pendingRequests,
     pendingUnmuteRequests,
+    pendingUnmuteTargetKeys,
     messages,
     reactions,
     audioInputs,

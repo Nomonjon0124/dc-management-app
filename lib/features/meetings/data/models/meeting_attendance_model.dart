@@ -1,4 +1,5 @@
 import '../../domain/entities/meeting_attendance.dart';
+import 'meeting_date_parser.dart';
 
 /// [MeetingAttendance] JSON serializatsiyasi (`/meeting-attendance/`).
 class MeetingAttendanceModel extends MeetingAttendance {
@@ -50,7 +51,7 @@ class MeetingAttendanceModel extends MeetingAttendance {
       userName: pick(['username', 'full_name', 'name']),
       userPosition: pick(['position']),
       userAvatar: pick(['avatar']),
-      meetingStartTime: DateTime.tryParse(
+      meetingStartTime: parseMeetingWallClock(
         json['meeting_start_time']?.toString() ?? '',
       ),
       joinedAt: DateTime.tryParse(json['joined_at']?.toString() ?? ''),

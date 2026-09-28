@@ -1673,6 +1673,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get meetingCallLeave => 'Leave';
 
   @override
+  String get meetingCallPinParticipant => 'Pin to screen';
+
+  @override
+  String get meetingCallUnpinParticipant => 'Unpin from screen';
+
+  @override
   String get meetingCallYou => 'You';
 
   @override
@@ -1686,6 +1692,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get meetingCallRaisedNotice => 'Dilnoza Sattorova raised a hand';
+
+  @override
+  String meetingCallRaisedBy(Object name) {
+    return '$name raised their hand';
+  }
 
   @override
   String get meetingCallWantsToJoin => 'wants to join the meeting';
@@ -1832,6 +1843,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get meetingCallDirectJoin => 'Direct join';
+
+  @override
+  String get meetingCallMinutes => 'minutes';
 
   @override
   String get meetingCallMeetingUid => 'MT-0005';

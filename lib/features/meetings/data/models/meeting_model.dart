@@ -1,5 +1,6 @@
 import '../../../tasks/domain/entities/task_form_options.dart';
 import '../../domain/entities/meeting.dart';
+import 'meeting_date_parser.dart';
 
 /// [Meeting] JSON serializatsiyasi (`/meetings/`).
 ///
@@ -180,7 +181,7 @@ class MeetingModel extends Meeting {
       description: str(json['description']),
       link: str(json['link']),
       penaltyPercentage: json['penalty_percentage']?.toString(),
-      startDate: DateTime.tryParse(
+      startDate: parseMeetingWallClock(
         pick(['start_time', 'start_date', 'date', 'datetime']),
       ),
       durationMinutes: intValue(json['duration_minutes']),

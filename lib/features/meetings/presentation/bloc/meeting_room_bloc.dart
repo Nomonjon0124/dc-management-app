@@ -6,6 +6,7 @@ import '../../domain/entities/meeting_room.dart';
 import '../../domain/repository/meeting_room_repository.dart';
 import '../../domain/usecases/close_meeting_usecase.dart';
 import '../../domain/usecases/get_meeting_usecase.dart';
+import '../services/meeting_sound_service.dart';
 import 'meeting_room_event.dart';
 import 'meeting_room_state.dart';
 
@@ -14,9 +15,11 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     required MeetingRoomRepository repository,
     required CloseMeetingUseCase closeMeeting,
     required GetMeetingUseCase getMeeting,
+    required MeetingSoundService soundService,
   }) : _repository = repository,
        _closeMeeting = closeMeeting,
        _getMeeting = getMeeting,
+       _soundService = soundService,
        super(const MeetingRoomState()) {
     on<MeetingRoomStarted>(_onStarted);
     on<MeetingRoomJoinRequested>(_onJoinRequested);
@@ -29,9 +32,11 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     on<MeetingRoomMicrophoneToggled>(_onMicrophoneToggled);
     on<MeetingRoomCameraToggled>(_onCameraToggled);
     on<MeetingRoomHandToggled>(_onHandToggled);
+    on<MeetingRoomParticipantPinToggled>(_onParticipantPinToggled);
     on<MeetingRoomChatMessageSent>(_onChatMessageSent);
     on<MeetingRoomReactionSent>(_onReactionSent);
     on<MeetingRoomReactionExpired>(_onReactionExpired);
+    on<MeetingRoomHandRaiseNoticeExpired>(_onHandRaiseNoticeExpired);
     on<MeetingRoomParticipantMuted>(_onParticipantMuted);
     on<MeetingRoomUnmuteRequested>(_onUnmuteRequested);
     on<MeetingRoomUnmuteResponseSent>(_onUnmuteResponseSent);
@@ -53,25 +58,63 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
   final MeetingRoomRepository _repository;
   final CloseMeetingUseCase _closeMeeting;
   final GetMeetingUseCase _getMeeting;
+  final MeetingSoundService _soundService;
   StreamSubscription<MeetingRealtimeMessage>? _realtimeSubscription;
   StreamSubscription<MeetingMediaEvent>? _mediaSubscription;
+  Timer? _handRaiseNoticeTimer;
+  int _handRaiseNoticeId = 0;
   bool _joinRequested = false;
   bool _admissionRequested = false;
   bool _tokenRequested = false;
   bool _mediaConnectRequested = false;
   bool _endRequested = false;
+  final Map<String, DateTime> _recentSoundEvents = {};
+
+  void _playSound(Future<void> Function() play) {
+    unawaited(play().catchError((_) {}));
+  }
+
+  bool _shouldPlayDeduplicated(String key) {
+    final now = DateTime.now();
+    final previous = _recentSoundEvents[key];
+    _recentSoundEvents[key] = now;
+    return previous == null ||
+        now.difference(previous) > const Duration(seconds: 1);
+  }
+
+  void _playHandRaiseSound({required String identity, required bool raised}) {
+    if (!raised ||
+        !_shouldPlayDeduplicated('hand:${_canonicalIdentity(identity)}')) {
+      return;
+    }
+    _playSound(_soundService.playHandRaised);
+  }
+
+  String _canonicalIdentity(String identity) {
+    for (final participant in state.participants) {
+      if (participant.identity == identity ||
+          participant.userId?.toString() == identity ||
+          participant.sessionIdentities.contains(identity)) {
+        return participant.userId?.toString() ?? participant.identity;
+      }
+    }
+    return identity;
+  }
 
   Future<void> _onStarted(
     MeetingRoomStarted event,
     Emitter<MeetingRoomState> emit,
   ) async {
     if (state.meetingId == event.meetingId) return;
+    _playSound(_soundService.initialize);
     final initial = event.initialMeeting;
     emit(
       state.copyWith(
         meetingId: event.meetingId,
         meeting: initial,
         title: initial?.title ?? '',
+        pendingUnmuteTargetKeys: const [],
+        clearPinnedParticipant: true,
         clearError: true,
       ),
     );
@@ -125,7 +168,13 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     _tokenRequested = false;
     _mediaConnectRequested = false;
     await _repository.close();
-    emit(state.copyWith(phase: MeetingRoomPhase.prejoin, clearError: true));
+    emit(
+      state.copyWith(
+        phase: MeetingRoomPhase.prejoin,
+        clearPinnedParticipant: true,
+        clearError: true,
+      ),
+    );
   }
 
   Future<void> _onUserApproved(
@@ -171,7 +220,13 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     _tokenRequested = false;
     _mediaConnectRequested = false;
     await _repository.close();
-    emit(state.copyWith(phase: MeetingRoomPhase.left, clearError: true));
+    emit(
+      state.copyWith(
+        phase: MeetingRoomPhase.left,
+        clearPinnedParticipant: true,
+        clearError: true,
+      ),
+    );
   }
 
   Future<void> _onEndRequested(
@@ -200,7 +255,13 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     _tokenRequested = false;
     _mediaConnectRequested = false;
     _endRequested = false;
-    emit(state.copyWith(phase: MeetingRoomPhase.prejoin, clearError: true));
+    emit(
+      state.copyWith(
+        phase: MeetingRoomPhase.prejoin,
+        clearPinnedParticipant: true,
+        clearError: true,
+      ),
+    );
     add(const MeetingRoomJoinRequested());
   }
 
@@ -253,9 +314,27 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
           participants: _withLocalHand(state.participants, raised),
         ),
       );
+      if (raised) {
+        _showHandRaiseNotice(_localParticipant(state.participants)?.name, emit);
+      } else if (state.handRaiseNoticeName != null) {
+        emit(state.copyWith(clearHandRaiseNotice: true));
+      }
     } on Object catch (error) {
       emit(state.copyWith(errorMessage: error.toString()));
     }
+  }
+
+  void _onParticipantPinToggled(
+    MeetingRoomParticipantPinToggled event,
+    Emitter<MeetingRoomState> emit,
+  ) {
+    final isPinned = state.pinnedParticipantIdentity == event.identity;
+    emit(
+      state.copyWith(
+        pinnedParticipantIdentity: isPinned ? null : event.identity,
+        clearPinnedParticipant: isPinned,
+      ),
+    );
   }
 
   Future<void> _onChatMessageSent(
@@ -266,6 +345,7 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     if (message.isEmpty) return;
     try {
       await _repository.sendChatMessage(message);
+      _playSound(_soundService.playChatMessage);
       final local = _localParticipant(state.participants);
       emit(
         state.copyWith(
@@ -311,6 +391,50 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
     );
   }
 
+  void _onHandRaiseNoticeExpired(
+    MeetingRoomHandRaiseNoticeExpired event,
+    Emitter<MeetingRoomState> emit,
+  ) {
+    if (state.handRaiseNoticeId != event.noticeId) return;
+    emit(state.copyWith(clearHandRaiseNotice: true));
+  }
+
+  void _showHandRaiseNotice(
+    String? participantName,
+    Emitter<MeetingRoomState> emit,
+  ) {
+    final name = participantName?.trim();
+    if (name == null || name.isEmpty) return;
+    _handRaiseNoticeTimer?.cancel();
+    final noticeId = ++_handRaiseNoticeId;
+    emit(
+      state.copyWith(handRaiseNoticeName: name, handRaiseNoticeId: noticeId),
+    );
+    _handRaiseNoticeTimer = Timer(
+      const Duration(seconds: 3),
+      () => add(MeetingRoomHandRaiseNoticeExpired(noticeId)),
+    );
+  }
+
+  String _participantName({int? userId, String? identity, String? fallback}) {
+    final fallbackName = fallback?.trim();
+    if (fallbackName != null &&
+        fallbackName.isNotEmpty &&
+        fallbackName != 'Foydalanuvchi') {
+      return fallbackName;
+    }
+    for (final participant in state.participants) {
+      if ((userId != null && participant.userId == userId) ||
+          (identity != null && participant.identity == identity)) {
+        final name = participant.name.trim();
+        if (name.isNotEmpty) return name;
+      }
+    }
+    return fallbackName == null || fallbackName.isEmpty
+        ? 'Foydalanuvchi'
+        : fallbackName;
+  }
+
   Future<void> _onParticipantMuted(
     MeetingRoomParticipantMuted event,
     Emitter<MeetingRoomState> emit,
@@ -336,6 +460,14 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
         targetIdentity: event.targetIdentity,
         trackSource: event.trackSource,
       );
+      final key = _unmuteTargetKey(event.targetIdentity, event.trackSource);
+      if (!state.pendingUnmuteTargetKeys.contains(key)) {
+        emit(
+          state.copyWith(
+            pendingUnmuteTargetKeys: [...state.pendingUnmuteTargetKeys, key],
+          ),
+        );
+      }
     } on Object catch (error) {
       emit(state.copyWith(errorMessage: error.toString()));
     }
@@ -622,6 +754,14 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
           );
         }
       case 'knock_request':
+      case 'join_request':
+      case 'meeting_join_request':
+        if (state.isHost &&
+            _shouldPlayDeduplicated(
+              'knock:${message.userId ?? message.username ?? 'unknown'}',
+            )) {
+          _playSound(_soundService.playKnockRequest);
+        }
         if (message.userId != null) {
           final exists = state.pendingRequests.any(
             (request) => request.userId == message.userId,
@@ -659,6 +799,21 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
               ),
             ),
           );
+          if (message.raised!) {
+            _playHandRaiseSound(
+              identity: message.userId!.toString(),
+              raised: message.raised!,
+            );
+            _showHandRaiseNotice(
+              _participantName(
+                userId: message.userId,
+                fallback: message.username,
+              ),
+              emit,
+            );
+          } else if (state.handRaiseNoticeName != null) {
+            emit(state.copyWith(clearHandRaiseNotice: true));
+          }
         }
       case 'reaction_received':
         if (message.reaction?.isNotEmpty == true) {
@@ -723,6 +878,12 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
                 for (final request in state.pendingUnmuteRequests)
                   if (request.requestId != message.requestId) request,
               ],
+              pendingUnmuteTargetKeys: message.targetIdentity == null
+                  ? const []
+                  : [
+                      for (final key in state.pendingUnmuteTargetKeys)
+                        if (!key.startsWith('${message.targetIdentity}::')) key,
+                    ],
             ),
           );
         }
@@ -845,9 +1006,15 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
       case MeetingMediaEventType.localMediaChanged:
         final participants = _preserveParticipantFlags(media.participants);
         final local = _localParticipant(participants);
+        _playParticipantJoinSounds(participants);
+        _playScreenShareChangeSounds(participants);
         emit(
           state.copyWith(
             participants: participants,
+            pendingUnmuteTargetKeys: _unresolvedUnmuteTargetKeys(
+              state.pendingUnmuteTargetKeys,
+              participants,
+            ),
             microphoneEnabled: media.microphoneEnabled,
             cameraEnabled: media.cameraEnabled,
             handRaised: local?.handRaised ?? state.handRaised,
@@ -872,6 +1039,7 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
         final data = media.dataMessage;
         if (data == null) return;
         if (data.type == 'chat' && data.text?.trim().isNotEmpty == true) {
+          _playSound(_soundService.playChatMessage);
           emit(state.copyWith(messages: [...state.messages, data]));
         } else if (data.type == 'reaction' && data.reaction != null) {
           final reaction = data.id == null
@@ -901,6 +1069,21 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
               ),
             ),
           );
+          if (data.raised!) {
+            _playHandRaiseSound(
+              identity: data.senderIdentity,
+              raised: data.raised!,
+            );
+            _showHandRaiseNotice(
+              _participantName(
+                identity: data.senderIdentity,
+                fallback: data.senderName,
+              ),
+              emit,
+            );
+          } else if (state.handRaiseNoticeName != null) {
+            emit(state.copyWith(clearHandRaiseNotice: true));
+          }
         }
       case MeetingMediaEventType.devicesChanged:
         emit(
@@ -916,6 +1099,37 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
   String _reactionId() =>
       '${DateTime.now().microsecondsSinceEpoch}_${state.reactions.length}';
 
+  String _unmuteTargetKey(String identity, String trackSource) =>
+      '$identity::$trackSource';
+
+  List<String> _unresolvedUnmuteTargetKeys(
+    List<String> keys,
+    List<MeetingRoomParticipant> participants,
+  ) {
+    return [
+      for (final key in keys)
+        if (_unmuteTargetIsStillPending(key, participants)) key,
+    ];
+  }
+
+  bool _unmuteTargetIsStillPending(
+    String key,
+    List<MeetingRoomParticipant> participants,
+  ) {
+    final separator = key.lastIndexOf('::');
+    if (separator < 1 || separator == key.length - 2) return false;
+    final identity = key.substring(0, separator);
+    final trackSource = key.substring(separator + 2);
+    final participant = participants.cast<MeetingRoomParticipant?>().firstWhere(
+      (item) => item?.identity == identity,
+      orElse: () => null,
+    );
+    if (participant == null) return false;
+    if (trackSource == 'microphone') return !participant.microphoneEnabled;
+    if (trackSource == 'camera') return !participant.cameraEnabled;
+    return false;
+  }
+
   List<MeetingRoomDataMessage> _appendReaction(
     List<MeetingRoomDataMessage> current,
     MeetingRoomDataMessage reaction,
@@ -928,10 +1142,46 @@ class MeetingRoomBloc extends Bloc<MeetingRoomEvent, MeetingRoomState> {
 
   @override
   Future<void> close() async {
+    _handRaiseNoticeTimer?.cancel();
+    await _soundService.dispose();
     await _realtimeSubscription?.cancel();
     await _mediaSubscription?.cancel();
     await _repository.close();
     return super.close();
+  }
+
+  void _playParticipantJoinSounds(List<MeetingRoomParticipant> participants) {
+    if (state.phase != MeetingRoomPhase.connected &&
+        state.phase != MeetingRoomPhase.reconnecting) {
+      return;
+    }
+    final previous = state.participants.map((item) => item.identity).toSet();
+    final joined = participants.where(
+      (participant) =>
+          !participant.isLocal && !previous.contains(participant.identity),
+    );
+    for (final participant in joined) {
+      if (_shouldPlayDeduplicated('joined:${participant.identity}')) {
+        _playSound(_soundService.playParticipantJoined);
+      }
+    }
+  }
+
+  void _playScreenShareChangeSounds(List<MeetingRoomParticipant> participants) {
+    for (final participant in participants) {
+      final previous = state.participants
+          .where((item) => item.identity == participant.identity)
+          .firstOrNull;
+      if (previous == null ||
+          previous.screenSharing == participant.screenSharing) {
+        continue;
+      }
+      if (_shouldPlayDeduplicated(
+        'screen:${participant.identity}:${participant.screenSharing}',
+      )) {
+        _playSound(_soundService.playScreenShareStartStop);
+      }
+    }
   }
 }
 

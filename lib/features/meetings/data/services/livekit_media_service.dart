@@ -140,17 +140,39 @@ class LiveKitMediaService {
           dataMessage: MeetingRoomDataMessage(
             type: type!,
             senderIdentity: sender.identity,
-            senderName: sender.name,
+            senderName: _firstNonEmpty(data['sender']?.toString(), sender.name),
             text: data['text']?.toString(),
             reaction: data['reaction']?.toString(),
             raised: data['raised'] is bool ? data['raised'] as bool : null,
-            sentAt: DateTime.tryParse(data['sent_at']?.toString() ?? ''),
+            sentAt: _messageSentAt(data['sent_at'] ?? data['time']),
           ),
         ),
       );
     } on Object {
       // Ignore malformed data packets from clients using an older protocol.
     }
+  }
+
+  String _firstNonEmpty(String? first, String? fallback) {
+    final firstValue = first?.trim();
+    if (firstValue != null && firstValue.isNotEmpty) return firstValue;
+    return fallback?.trim() ?? '';
+  }
+
+  DateTime? _messageSentAt(dynamic value) {
+    final raw = value?.toString().trim();
+    if (raw == null || raw.isEmpty) return null;
+    final parsed = DateTime.tryParse(raw);
+    if (parsed != null) return parsed;
+    final match = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(raw);
+    if (match == null) return null;
+    final hour = int.tryParse(match.group(1)!);
+    final minute = int.tryParse(match.group(2)!);
+    if (hour == null || minute == null || hour > 23 || minute > 59) {
+      return null;
+    }
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day, hour, minute);
   }
 
   void _emitParticipants() {

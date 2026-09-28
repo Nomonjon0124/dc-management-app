@@ -25,6 +25,8 @@ import 'widgets/call/meeting_call_control_bar.dart';
 import 'widgets/call/meeting_call_participant_tile.dart';
 import 'widgets/call/meeting_call_join_request.dart';
 import 'widgets/sheets/meeting_chat_sheet.dart';
+import 'widgets/sheets/meeting_more_sheet.dart';
+import 'widgets/sheets/meeting_permission_dialog.dart';
 
 /// UI-only meeting walkthrough; media and moderation are not connected yet.
 class MeetingCallPreviewPage extends StatelessWidget {
@@ -659,6 +661,7 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
       ),
       builder: (sheetContext) {
         if (sheet == _Sheet.chat) return _chatContent();
+        if (sheet == _Sheet.more) return _moreContent(sheetContext);
         return SafeArea(
           top: false,
           child: Padding(
@@ -705,7 +708,6 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
                     ),
                     SizedBox(height: 14.h),
                     if (sheet == _Sheet.participants) _participantsContent(),
-                    if (sheet == _Sheet.more) _moreContent(sheetContext),
                     if (sheet == _Sheet.devices) _devicesContent(),
                     if (sheet == _Sheet.exit)
                       _exitContent(sheetContext, includeEndForEveryone),
@@ -1291,98 +1293,33 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
       builder: (dialogContext) => Dialog(
         insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(20.r),
         ),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _icon(
-                camera ? Assets.icons.meetingVideo : Assets.icons.meetingMic,
-                colors.accentStrong,
-                24.w,
-              ),
-              SizedBox(height: 12.h),
-              (camera
-                      ? l10n.meetingCallCameraRequestTitle
-                      : l10n.meetingCallMicRequestTitle)
-                  .s(20.sp)
-                  .w(800)
-                  .c(colors.textStrong),
-              SizedBox(height: 12.h),
-              _surface(
-                color: colors.backgroundElevation1Alt,
-                radius: 12.r,
-                child: Padding(
-                  padding: EdgeInsets.all(10.w),
-                  child: Row(
-                    children: [
-                      _avatar(Assets.images.meetingSelf.path, 32.w),
-                      SizedBox(width: 10.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            l10n.meetingCallRequester
-                                .s(13.sp)
-                                .w(800)
-                                .c(colors.textStrong),
-                            l10n.meetingCallOrganizerRequested
-                                .s(11.sp)
-                                .w(500)
-                                .c(colors.textSoft),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 14.h),
-              (camera
-                      ? l10n.meetingCallCameraRequestHint
-                      : l10n.meetingCallMicRequestHint)
-                  .s(15.sp)
-                  .w(500)
-                  .c(colors.textSub)
-                  .h(1.5),
-              SizedBox(height: 16.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: _wideButton(
-                      l10n.meetingCallNotNow,
-                      colors.backgroundElevation2,
-                      colors.textStrong,
-                      () => Navigator.pop(dialogContext),
-                      icon: Assets.icons.icClose,
-                    ),
-                  ),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: _wideButton(
-                      camera
-                          ? l10n.meetingCallEnableCamera
-                          : l10n.meetingCallEnableMicrophone,
-                      colors.accentStrong,
-                      colors.textWhite,
-                      () {
-                        _bloc.add(
-                          MeetingCallPermissionAccepted(camera: camera),
-                        );
-                        Navigator.pop(dialogContext);
-                      },
-                      icon: camera
-                          ? Assets.icons.meetingVideo
-                          : Assets.icons.meetingMic,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+        child: MeetingPermissionDialog(
+          title: camera
+              ? l10n.meetingCallCameraRequestTitle
+              : l10n.meetingCallMicRequestTitle,
+          requesterName: l10n.meetingCallRequester,
+          requesterRole: l10n.meetingCallOrganizerRequested,
+          message: camera
+              ? l10n.meetingCallCameraRequestHint
+              : l10n.meetingCallMicRequestHint,
+          declineLabel: l10n.meetingCallNotNow,
+          enableLabel: camera
+              ? l10n.meetingCallEnableCamera
+              : l10n.meetingCallEnableMicrophone,
+          permissionIcon: camera
+              ? Assets.icons.meetingVideo
+              : Assets.icons.meetingMic,
+          enableIcon: camera
+              ? Assets.icons.meetingVideo
+              : Assets.icons.meetingMic,
+          requesterAvatar: _avatar(Assets.images.meetingSelf.path, 32),
+          onDecline: () => Navigator.pop(dialogContext),
+          onEnable: () {
+            _bloc.add(MeetingCallPermissionAccepted(camera: camera));
+            Navigator.pop(dialogContext);
+          },
         ),
       ),
     );
@@ -1404,90 +1341,60 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
   );
 
   Widget _moreContent(BuildContext sheetContext) {
-    final colors = AppColors.of(context);
     final l10n = AppLocalizations.of(context);
-    final items = <(SvgGenImage, String, VoidCallback)>[
-      (
-        Assets.icons.meetingScreen,
-        l10n.meetingCallShareScreen,
-        () {
-          Navigator.pop(sheetContext);
-          _bloc.add(const MeetingCallScreenSharingChanged(true));
-          _showSheet(_Sheet.shareScreen);
-        },
-      ),
-      (
-        Assets.icons.meetingChat,
-        l10n.meetingCallChat,
-        () {
-          Navigator.pop(sheetContext);
-          _showSheet(_Sheet.chat);
-        },
-      ),
-      (
-        Assets.icons.meetingSticker,
-        l10n.meetingCallStickers,
-        () {
-          Navigator.pop(sheetContext);
-          _bloc.add(const MeetingCallStickerPanelToggled());
-        },
-      ),
-      (
-        Assets.icons.icUserGroup,
-        l10n.meetingCallParticipants,
-        () {
-          Navigator.pop(sheetContext);
-          _showSheet(_Sheet.participants);
-        },
-      ),
-      (
-        Assets.icons.meetingInfo,
-        l10n.meetingDetailTitle,
-        () {
-          Navigator.pop(sheetContext);
-          _showSheet(_Sheet.details);
-        },
-      ),
-      (
-        Assets.icons.meetingPower,
-        l10n.meetingCallLeave,
-        () {
-          Navigator.pop(sheetContext);
-          _showSheet(_Sheet.exit, includeEndForEveryone: false);
-        },
-      ),
-    ];
-    return Column(
-      children: [
-        for (final item in items)
-          InkWell(
-            onTap: item.$3,
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 12.h),
-              child: Row(
-                children: [
-                  _icon(
-                    item.$1,
-                    item.$2 == l10n.meetingCallLeave
-                        ? colors.errorStrong
-                        : colors.iconStrong,
-                    20.w,
-                  ),
-                  SizedBox(width: 14.w),
-                  Expanded(
-                    child: item.$2
-                        .s(13.sp)
-                        .w(700)
-                        .c(
-                          item.$2 == l10n.meetingCallLeave
-                              ? colors.errorStrong
-                              : colors.textStrong,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+    return MeetingMoreSheet(
+      onClose: () => Navigator.pop(sheetContext),
+      actions: [
+        MeetingMoreSheetAction(
+          icon: Assets.icons.meetingScreen,
+          label: l10n.meetingCallShareScreen,
+          onTap: () {
+            Navigator.pop(sheetContext);
+            _bloc.add(const MeetingCallScreenSharingChanged(true));
+            _showSheet(_Sheet.shareScreen);
+          },
+        ),
+        MeetingMoreSheetAction(
+          icon: Assets.icons.meetingChat,
+          label: l10n.meetingCallChat,
+          onTap: () {
+            Navigator.pop(sheetContext);
+            _showSheet(_Sheet.chat);
+          },
+        ),
+        MeetingMoreSheetAction(
+          icon: Assets.icons.meetingSticker,
+          label: l10n.meetingCallStickers,
+          onTap: () {
+            Navigator.pop(sheetContext);
+            _bloc.add(const MeetingCallStickerPanelToggled());
+          },
+        ),
+        MeetingMoreSheetAction(
+          icon: Assets.icons.icUserGroup,
+          label: l10n.meetingCallParticipants,
+          onTap: () {
+            Navigator.pop(sheetContext);
+            _showSheet(_Sheet.participants);
+          },
+        ),
+        MeetingMoreSheetAction(
+          icon: Assets.icons.meetingInfo,
+          label: l10n.meetingDetailTitle,
+          onTap: () {
+            Navigator.pop(sheetContext);
+            _showSheet(_Sheet.details);
+          },
+        ),
+        MeetingMoreSheetAction(
+          icon: Assets.icons.meetingPower,
+          label: l10n.meetingCallLeave,
+          destructive: true,
+          onTap: () {
+            Navigator.pop(sheetContext);
+            _showSheet(_Sheet.exit, includeEndForEveryone: false);
+          },
+        ),
       ],
     );
   }

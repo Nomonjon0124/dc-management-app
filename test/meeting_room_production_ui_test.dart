@@ -14,6 +14,7 @@ import 'package:dc_management_app/features/meetings/domain/usecases/close_meetin
 import 'package:dc_management_app/features/meetings/domain/usecases/get_meeting_usecase.dart';
 import 'package:dc_management_app/features/meetings/data/services/livekit_media_service.dart';
 import 'package:dc_management_app/features/meetings/presentation/bloc/meeting_room_bloc.dart';
+import 'package:dc_management_app/features/meetings/presentation/services/meeting_sound_service.dart';
 import 'package:dc_management_app/features/meetings/presentation/pages/meeting_new_design/widgets/call/meeting_call_control_bar.dart';
 import 'package:dc_management_app/features/meetings/presentation/pages/meeting_new_design/widgets/call/meeting_call_participant_tile.dart';
 import 'package:dc_management_app/features/meetings/presentation/pages/meeting_new_design/widgets/call/meeting_call_stage.dart';
@@ -37,6 +38,7 @@ void main() {
           repository: roomRepository,
           closeMeeting: CloseMeetingUseCase(meetingRepository),
           getMeeting: GetMeetingUseCase(meetingRepository),
+          soundService: const NoopMeetingSoundService(),
         ),
       )
       // The fake room intentionally has no video track, so avatar fallback is
