@@ -144,8 +144,11 @@ void main() {
       await tester.ensureVisible(find.text('Qo‘shilish'));
       await tester.tap(find.text('Qo‘shilish'));
       await tester.pumpAndSettle();
-      await tester.tap(find.bySemanticsLabel('Stikerlar'));
-      await tester.pump();
+      await tester.ensureVisible(find.bySemanticsLabel('Yana'));
+      await tester.tap(find.bySemanticsLabel('Yana'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Stikerlar'));
+      await tester.pumpAndSettle();
 
       final closeButton = find.bySemanticsLabel('Stikerlar panelini yopish');
       expect(closeButton, findsOneWidget);
@@ -157,8 +160,10 @@ void main() {
       await tester.pump();
       expect(closeButton, findsNothing);
 
-      await tester.tap(find.bySemanticsLabel('Stikerlar'));
-      await tester.pump();
+      await tester.tap(find.bySemanticsLabel('Yana'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Stikerlar'));
+      await tester.pumpAndSettle();
       await tester.tapAt(const Offset(4, 100));
       await tester.pump();
       expect(closeButton, findsNothing);

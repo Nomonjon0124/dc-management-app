@@ -13,22 +13,16 @@ class MeetingCallTopBar extends StatelessWidget {
     required this.participantCount,
     required this.onTitleTap,
     required this.onEndTap,
-    required this.onStickerTap,
     required this.onParticipantsTap,
     required this.endLabel,
-    required this.stickerLabel,
-    this.showSticker = true,
   });
 
   final String title;
   final String participantCount;
   final VoidCallback onTitleTap;
   final VoidCallback onEndTap;
-  final VoidCallback onStickerTap;
   final VoidCallback onParticipantsTap;
   final String endLabel;
-  final String stickerLabel;
-  final bool showSticker;
 
   @override
   Widget build(BuildContext context) {
@@ -71,18 +65,6 @@ class MeetingCallTopBar extends StatelessWidget {
             size: 32.w,
             iconSize: 18.w,
           ),
-          if (showSticker) ...[
-            SizedBox(width: 8.w),
-            MeetingPreviewIconButton(
-              asset: Assets.icons.meetingSticker,
-              background: colors.backgroundElevation2,
-              foreground: colors.iconStrong,
-              onTap: onStickerTap,
-              semanticLabel: stickerLabel,
-              size: 32.w,
-              iconSize: 18.w,
-            ),
-          ],
           SizedBox(width: 8.w),
           InkWell(
             onTap: onParticipantsTap,

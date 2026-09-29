@@ -594,11 +594,8 @@ class _MeetingRoomViewState extends State<_MeetingRoomView> {
               participantCount: '${state.participants.length}',
               onTitleTap: () => _showDetails(context, state),
               onEndTap: () => _showExit(context, state),
-              onStickerTap: _toggleStickers,
               onParticipantsTap: () => _showParticipants(context, state),
               endLabel: l10n.meetingCallEnd,
-              stickerLabel: l10n.meetingCallStickers,
-              showSticker: true,
             ),
             if (displayError != null)
               Padding(
