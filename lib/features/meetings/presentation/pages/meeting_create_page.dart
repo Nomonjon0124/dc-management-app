@@ -57,8 +57,8 @@ class MeetingCreatePage extends StatelessWidget {
 
   final bool readOnly;
 
-  /// Production routes use the Figma form while the old implementation stays
-  /// available for comparison and safe rollback.
+  /// Production routes use the Figma form. `false` is a legacy compatibility
+  /// branch kept for rollback; no current production route passes it.
   final bool newDesign;
 
   @override
@@ -459,6 +459,8 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
       ],
       child: Scaffold(
         backgroundColor: colors.backgroundBase,
+        // Legacy form branch: retained for rollback/reference while all
+        // production meeting routes use `newDesign: true`.
         body: widget.newDesign
             ? _buildNewDesignBody(context, colors, l10n)
             : SafeArea(
