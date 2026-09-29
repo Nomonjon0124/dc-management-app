@@ -5,6 +5,7 @@ import '../../../../../../../config/theme/app_colors.dart';
 import '../../../../../../../core/extentions/text_extensions.dart';
 import '../../../../../../../core/gen/assets.gen.dart';
 import '../common/meeting_preview_icon_button.dart';
+import '../../../../theme/meeting_theme_colors.dart';
 
 class MeetingCallTopBar extends StatelessWidget {
   const MeetingCallTopBar({
@@ -71,7 +72,7 @@ class MeetingCallTopBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(999.r),
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: colors.backgroundElevation2,
+                color: colors.meetingControlSurface,
                 borderRadius: BorderRadius.circular(999.r),
               ),
               child: Padding(

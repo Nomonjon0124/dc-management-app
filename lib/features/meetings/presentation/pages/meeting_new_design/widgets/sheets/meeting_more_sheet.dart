@@ -5,6 +5,7 @@ import '../../../../../../../config/theme/app_colors.dart';
 import '../../../../../../../core/extentions/text_extensions.dart';
 import '../../../../../../../core/gen/assets.gen.dart';
 import '../../../../../../../l10n/app_localizations.dart';
+import '../../../../theme/meeting_theme_colors.dart';
 
 class MeetingMoreSheetAction {
   const MeetingMoreSheetAction({
@@ -67,7 +68,7 @@ class MeetingMoreSheet extends StatelessWidget {
                       button: true,
                       label: l10n.meetingCallClose,
                       child: Material(
-                        color: colors.backgroundElevation2,
+                        color: colors.meetingControlSurface,
                         shape: const CircleBorder(),
                         child: InkWell(
                           onTap: onClose,
@@ -135,7 +136,7 @@ class _ActionRow extends StatelessWidget {
             DecoratedBox(
               decoration: BoxDecoration(
                 color: action.destructive
-                    ? colors.errorSoft
+                    ? colors.meetingDestructiveSurface
                     : colors.backgroundElevation1Alt,
                 shape: BoxShape.circle,
               ),

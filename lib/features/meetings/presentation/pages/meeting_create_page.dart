@@ -25,6 +25,7 @@ import '../../domain/entities/meeting_attendance.dart';
 import '../../domain/entities/meeting_form.dart';
 import '../bloc/meeting_create_bloc.dart';
 import '../widgets/meeting_excuse_row.dart';
+import '../theme/meeting_theme_colors.dart';
 import 'meeting_new_design/widgets/common/meeting_preview_button.dart';
 import 'meeting_new_design/widgets/form/meeting_preview_field.dart';
 import 'meeting_new_design/widgets/form/meeting_preview_header.dart';
@@ -1124,11 +1125,11 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
         colorScheme: base.colorScheme.copyWith(
           primary: colors.accentSub,
           onPrimary: colors.textWhite,
-          surface: colors.backgroundBase,
+          surface: colors.overlaySurface,
           onSurface: colors.textStrong,
         ),
         timePickerTheme: TimePickerThemeData(
-          backgroundColor: colors.backgroundBase,
+          backgroundColor: colors.overlaySurface,
           shape: shape,
         ),
         textButtonTheme: TextButtonThemeData(
@@ -1205,7 +1206,7 @@ class _MeetingStatusPill extends StatelessWidget {
     final colors = AppColors.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.backgroundElevation2,
+        color: colors.meetingControlSurface,
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Padding(

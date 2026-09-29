@@ -44,6 +44,33 @@ void main() {
     );
   }
 
+  for (final size in const [Size(320, 568), Size(390, 844), Size(844, 390)]) {
+    testWidgets(
+      'dark meeting design has no overflow at ${size.width}x${size.height}',
+      (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          _app(
+            const MeetingDesignPreviewPage(mode: MeetingPreviewMode.create),
+            darkMode: true,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+
+        await tester.pumpWidget(
+          _app(const MeetingCallPreviewPage(), darkMode: true),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('chat composer remains usable with the keyboard', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
@@ -74,11 +101,14 @@ void main() {
   });
 }
 
-Widget _app(Widget home) {
+Widget _app(Widget home, {bool darkMode = false}) {
   return ScreenUtilInit(
     designSize: const Size(390, 844),
     builder: (_, _) => MaterialApp(
-      theme: ThemeData(extensions: [AppColors.light()]),
+      theme: ThemeData(
+        brightness: darkMode ? Brightness.dark : Brightness.light,
+        extensions: [darkMode ? AppColors.dark() : AppColors.light()],
+      ),
       locale: const Locale('uz'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

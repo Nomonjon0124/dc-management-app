@@ -7,6 +7,7 @@ import '../../../../../../../core/extentions/text_extensions.dart';
 import '../../../../../../../core/gen/assets.gen.dart';
 import '../../../../../../../l10n/app_localizations.dart';
 import '../../../../../domain/entities/meeting.dart';
+import '../../../../theme/meeting_theme_colors.dart';
 
 /// Figma 4145:2192 dagi yig'ilish ma'lumotlari sheet'i.
 ///
@@ -100,7 +101,7 @@ class MeetingDetailsSheet extends StatelessWidget {
 
   Widget _closeButton(BuildContext context, AppColors colors) {
     return Material(
-      color: colors.backgroundElevation2,
+      color: colors.meetingControlSurface,
       shape: const CircleBorder(),
       child: InkWell(
         onTap: onClose ?? () => Navigator.of(context).pop(),

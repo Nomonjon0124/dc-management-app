@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../../../config/theme/app_colors.dart';
 import '../../../../../../../core/gen/assets.gen.dart';
+import '../../../../theme/meeting_theme_colors.dart';
 
 class MeetingCallControlBar extends StatelessWidget {
   const MeetingCallControlBar({
@@ -208,7 +209,7 @@ class MeetingCallControlBar extends StatelessWidget {
         ? colors.errorStrong
         : selected
         ? colors.accentStrong
-        : colors.backgroundElevation2;
+        : colors.meetingControlSurface;
     return Semantics(
       button: true,
       label: label,

@@ -7,6 +7,7 @@ import '../../../../../../../core/gen/assets.gen.dart';
 import '../../../../../../../l10n/app_localizations.dart';
 import '../common/meeting_preview_icon_button.dart';
 import '../common/meeting_preview_surface.dart';
+import '../../../../theme/meeting_theme_colors.dart';
 
 class MeetingCallStickersPanel extends StatelessWidget {
   const MeetingCallStickersPanel({
@@ -67,7 +68,7 @@ class MeetingCallStickersPanel extends StatelessWidget {
                   SizedBox(width: 8.w),
                   MeetingPreviewIconButton(
                     asset: Assets.icons.icClose,
-                    background: colors.backgroundElevation2,
+                    background: colors.meetingControlSurface,
                     foreground: colors.iconSub,
                     onTap: onClosed!,
                     semanticLabel: l10n.meetingCallCloseStickers,

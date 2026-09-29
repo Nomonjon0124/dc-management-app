@@ -6,6 +6,7 @@ import '../../../../../../../core/extentions/text_extensions.dart';
 import '../../../../../../../core/gen/assets.gen.dart';
 import '../../../../../../../l10n/app_localizations.dart';
 import '../../../../../domain/entities/meeting_room.dart';
+import '../../../../theme/meeting_theme_colors.dart';
 
 class MeetingChatSheet extends StatefulWidget {
   const MeetingChatSheet({
@@ -229,7 +230,7 @@ class _MeetingChatSheetState extends State<MeetingChatSheet> {
                       maxLines: 1,
                       textInputAction: TextInputAction.send,
                       onSubmitted: (_) => _send(),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      style: TextStyle(
                         fontFamily: 'Manrope',
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w500,
@@ -243,14 +244,13 @@ class _MeetingChatSheetState extends State<MeetingChatSheet> {
                         focusedBorder: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
                         hintText: l10n.meetingCallMessageHint,
-                        hintStyle: Theme.of(context).textTheme.bodyMedium
-                            ?.copyWith(
-                              fontFamily: 'Manrope',
-                              fontSize: 15.sp,
-                              fontWeight: FontWeight.w500,
-                              height: 24 / 15,
-                              color: colors.textSoft,
-                            ),
+                        hintStyle: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w500,
+                          height: 24 / 15,
+                          color: colors.textSoft,
+                        ),
                       ),
                     ),
                   ),
@@ -344,7 +344,7 @@ class _MeetingChatSheetState extends State<MeetingChatSheet> {
                         onTap: Navigator.of(context).pop,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: colors.backgroundElevation2,
+                            color: colors.meetingControlSurface,
                             shape: BoxShape.circle,
                           ),
                           child: SizedBox(

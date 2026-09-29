@@ -5,6 +5,7 @@ import '../../../../../../../config/theme/app_colors.dart';
 import '../../../../../../../core/extentions/text_extensions.dart';
 import '../../../../../../../core/gen/assets.gen.dart';
 import 'meeting_preview_button.dart';
+import '../../../../theme/meeting_theme_colors.dart';
 
 class MeetingEndedResult extends StatelessWidget {
   const MeetingEndedResult({
@@ -85,7 +86,7 @@ class MeetingEndedResult extends StatelessWidget {
                     SizedBox(height: 10.h),
                     MeetingPreviewButton(
                       label: homeLabel,
-                      background: colors.backgroundElevation2,
+                      background: colors.meetingControlSurface,
                       foreground: colors.textStrong,
                       borderColor: colors.strokeSub,
                       onTap: onHome,

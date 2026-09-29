@@ -6,6 +6,7 @@ import '../../../../../../../core/extentions/text_extensions.dart';
 import '../../../../../../../core/gen/assets.gen.dart';
 import '../../../../../../../core/widgets/tui_avatar.dart';
 import '../../../../../../../l10n/app_localizations.dart';
+import '../../../../theme/meeting_theme_colors.dart';
 import '../common/meeting_preview_avatar.dart';
 import '../common/meeting_preview_button.dart';
 
@@ -29,7 +30,7 @@ class MeetingCallJoinRequest extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.white,
+        color: colors.overlaySurface,
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -81,7 +82,7 @@ class MeetingCallJoinRequest extends StatelessWidget {
                 Expanded(
                   child: MeetingPreviewButton(
                     label: l10n.meetingCallReject,
-                    background: colors.backgroundElevation2,
+                    background: colors.meetingControlSurface,
                     foreground: colors.textStrong,
                     onTap: onReject,
                     icon: Assets.icons.icClose,

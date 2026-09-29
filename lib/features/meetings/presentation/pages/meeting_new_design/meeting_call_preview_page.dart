@@ -15,6 +15,7 @@ import '../../../domain/entities/meeting_room.dart';
 import '../../bloc/meeting_new_design/meeting_call_preview_bloc.dart';
 import '../../bloc/meeting_new_design/meeting_call_preview_event.dart';
 import '../../bloc/meeting_new_design/meeting_call_preview_state.dart';
+import '../../theme/meeting_theme_colors.dart';
 import 'widgets/common/meeting_preview_avatar.dart';
 import 'widgets/common/meeting_preview_button.dart';
 import 'widgets/common/meeting_ended_result.dart';
@@ -178,7 +179,7 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
                                         ? Assets.icons.meetingMic
                                         : Assets.icons.meetingMicOff,
                                     _micOn
-                                        ? colors.backgroundElevation2
+                                        ? colors.meetingControlSurface
                                         : colors.errorStrong,
                                     _micOn
                                         ? colors.iconStrong
@@ -196,7 +197,7 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
                                         ? Assets.icons.meetingVideo
                                         : Assets.icons.meetingVideoOff,
                                     _cameraOn
-                                        ? colors.backgroundElevation2
+                                        ? colors.meetingControlSurface
                                         : colors.errorStrong,
                                     _cameraOn
                                         ? colors.iconStrong
@@ -320,7 +321,7 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
         SizedBox(height: 16.h),
         _wideButton(
           l10n.meetingCallCancel,
-          colors.backgroundElevation2,
+          colors.meetingControlSurface,
           colors.textStrong,
           () => _bloc.add(const MeetingCallCancelled()),
           icon: Assets.icons.icClose,
@@ -374,7 +375,7 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
               SizedBox(width: 8.w),
               _circleAction(
                 Assets.icons.meetingSticker,
-                colors.backgroundElevation2,
+                colors.meetingControlSurface,
                 colors.iconStrong,
                 () => _bloc.add(const MeetingCallStickerPanelToggled()),
                 l10n.meetingCallStickers,
@@ -386,7 +387,7 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
                 onTap: () => _showSheet(_Sheet.participants),
                 borderRadius: BorderRadius.circular(999.r),
                 child: _surface(
-                  color: colors.backgroundElevation2,
+                  color: colors.meetingControlSurface,
                   radius: 999.r,
                   child: Padding(
                     padding: EdgeInsets.symmetric(
@@ -697,7 +698,7 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
                         ),
                         _circleAction(
                           Assets.icons.icClose,
-                          colors.backgroundElevation2,
+                          colors.meetingControlSurface,
                           colors.iconStrong,
                           () => Navigator.pop(sheetContext),
                           l10n.meetingCallClose,
@@ -838,7 +839,7 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
         SizedBox(height: 10.h),
         _wideButton(
           l10n.meetingCallCancel,
-          colors.backgroundElevation2,
+          colors.meetingControlSurface,
           colors.textStrong,
           () => Navigator.pop(sheetContext),
           icon: Assets.icons.icClose,
@@ -969,7 +970,7 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
           Assets.icons.icArrowRight,
           l10n.meetingCallChooseAnotherScreen,
           colors.iconStrong,
-          colors.backgroundElevation2,
+          colors.meetingControlSurface,
           () {
             _bloc.add(const MeetingCallScreenSharingChanged(true));
             Navigator.pop(sheetContext);
@@ -1055,7 +1056,7 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12.r),
       child: _surface(
-        color: selected ? colors.backgroundElevation2 : colors.overlaySurface,
+        color: selected ? colors.meetingControlSurface : colors.overlaySurface,
         radius: 12.r,
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
@@ -1291,6 +1292,9 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
       context: context,
       barrierColor: colors.black.withValues(alpha: 0.5),
       builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
         insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.r),
@@ -1408,7 +1412,7 @@ class _MeetingCallPreviewViewState extends State<_MeetingCallPreviewView> {
           Expanded(child: title.s(17.sp).w(800).c(colors.textStrong)),
           _circleAction(
             Assets.icons.icClose,
-            colors.backgroundElevation2,
+            colors.meetingControlSurface,
             colors.iconStrong,
             () => Navigator.of(context).maybePop(),
             AppLocalizations.of(context).meetingCallClose,

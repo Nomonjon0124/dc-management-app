@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../../../config/theme/app_colors.dart';
 import '../../../../../../../core/extentions/text_extensions.dart';
 import '../../../../../../../core/gen/assets.gen.dart';
+import '../../../../theme/meeting_theme_colors.dart';
 
 class MeetingPreviewHeader extends StatelessWidget {
   const MeetingPreviewHeader({
@@ -38,7 +39,7 @@ class MeetingPreviewHeader extends StatelessWidget {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: roundClose
-                    ? colors.backgroundElevation2
+                    ? colors.meetingControlSurface
                     : Colors.transparent,
                 shape: BoxShape.circle,
               ),

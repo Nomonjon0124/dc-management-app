@@ -38,6 +38,7 @@ import 'meeting_new_design/widgets/sheets/meeting_more_sheet.dart';
 import 'meeting_new_design/widgets/sheets/meeting_participants_sheet.dart';
 import 'meeting_new_design/widgets/sheets/meeting_permission_dialog.dart';
 import '../widgets/meeting_live_reaction_overlay.dart';
+import '../theme/meeting_theme_colors.dart';
 
 /// Production meeting room. The meeting WebSocket and LiveKit remain owned by
 /// [MeetingRoomBloc]; this page only renders the Figma-aligned UI for its state.
@@ -554,7 +555,7 @@ class _MeetingRoomViewState extends State<_MeetingRoomView> {
           SizedBox(height: 16.h),
           MeetingPreviewButton(
             label: l10n.meetingCallCancel,
-            background: colors.backgroundElevation2,
+            background: colors.meetingControlSurface,
             foreground: colors.textStrong,
             icon: Assets.icons.icClose,
             onTap: () => context.read<MeetingRoomBloc>().add(
@@ -1787,7 +1788,7 @@ class _MeetingRoomViewState extends State<_MeetingRoomView> {
                   SizedBox(height: 10.h),
                   MeetingPreviewButton(
                     label: l10n.meetingCallEndForEveryone,
-                    background: colors.backgroundElevation2,
+                    background: colors.meetingControlSurface,
                     foreground: colors.errorStrong,
                     icon: Assets.icons.meetingPower,
                     onTap: () {

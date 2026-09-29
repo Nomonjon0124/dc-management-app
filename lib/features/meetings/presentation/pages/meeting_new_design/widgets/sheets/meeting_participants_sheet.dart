@@ -8,6 +8,7 @@ import '../../../../../../../core/gen/assets.gen.dart';
 import '../../../../../../../core/widgets/tui_avatar.dart';
 import '../../../../../../../l10n/app_localizations.dart';
 import '../common/meeting_preview_icon_button.dart';
+import '../../../../theme/meeting_theme_colors.dart';
 
 class MeetingParticipantsSheet extends StatelessWidget {
   const MeetingParticipantsSheet({
@@ -61,7 +62,7 @@ class MeetingParticipantsSheet extends StatelessWidget {
             Expanded(child: title.s(17.sp).w(800).c(colors.textStrong)),
             MeetingPreviewIconButton(
               asset: Assets.icons.icClose,
-              background: colors.backgroundElevation2,
+              background: colors.meetingControlSurface,
               foreground: colors.iconStrong,
               onTap: onClose,
               semanticLabel: l10n.meetingCallClose,
