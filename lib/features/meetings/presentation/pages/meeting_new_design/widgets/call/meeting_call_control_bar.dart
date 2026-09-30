@@ -80,7 +80,7 @@ class MeetingCallControlBar extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: outerPadding),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: colors.white,
+              color: colors.meetingControlBarSurface,
               borderRadius: BorderRadius.circular(999.r),
               boxShadow: [
                 BoxShadow(

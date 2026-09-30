@@ -23,6 +23,8 @@ void main() {
 
     expect(light.meetingControlSurface, light.backgroundElevation2);
     expect(dark.meetingControlSurface, dark.backgroundElevation2Alt);
+    expect(light.meetingControlBarSurface, light.white);
+    expect(dark.meetingControlBarSurface, dark.black);
     expect(light.meetingDestructiveSurface, light.errorSoft);
     expect(dark.meetingDestructiveSurface, dark.errorDisabled);
   });

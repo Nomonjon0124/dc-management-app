@@ -13,6 +13,12 @@ extension MeetingThemeColors on AppColors {
   Color get meetingControlSurface =>
       meetingIsDark ? backgroundElevation2Alt : backgroundElevation2;
 
+  /// Figma meeting call control bar's outer pill surface.
+  ///
+  /// The component uses the `white` token in light mode and resolves that
+  /// semantic token to black in dark mode.
+  Color get meetingControlBarSurface => meetingIsDark ? black : white;
+
   Color get meetingDestructiveSurface =>
       meetingIsDark ? errorDisabled : errorSoft;
 }
