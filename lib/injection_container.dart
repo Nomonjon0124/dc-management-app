@@ -304,6 +304,7 @@ Future<void> configureDependencies() async {
         updateMeeting: getIt(),
         getOptions: getIt(),
         getMembers: getIt(),
+        getUsers: getIt(),
         getMeeting: getIt(),
         createMeeting: getIt(),
         closeMeeting: getIt(),

@@ -26,7 +26,8 @@ class MeetingCreateProjectSelected extends MeetingCreateEvent {
 class MeetingCreateParticipantsRequested extends MeetingCreateEvent {
   const MeetingCreateParticipantsRequested(this.projectId);
 
-  final int projectId;
+  /// `null` bo'lsa loyiha a'zolari o'rniga barcha xodimlar yuklanadi.
+  final int? projectId;
 
   @override
   List<Object?> get props => [projectId];

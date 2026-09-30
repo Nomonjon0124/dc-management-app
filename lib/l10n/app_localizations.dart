@@ -2303,7 +2303,7 @@ abstract class AppLocalizations {
   /// No description provided for @meetingCreateRequiredError.
   ///
   /// In uz, this message translates to:
-  /// **'Loyiha, nomi, havolasi, tavsifi, sana va davomiyligi majburiy'**
+  /// **'Nomi, tavsifi, sana va davomiyligi majburiy'**
   String get meetingCreateRequiredError;
 
   /// No description provided for @meetingCreateSuccess.

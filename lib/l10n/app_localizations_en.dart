@@ -1138,7 +1138,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get meetingCreateRequiredError =>
-      'Project, name, link, description, date and duration are required';
+      'Name, description, date and duration are required';
 
   @override
   String get meetingCreateSuccess => 'Meeting created';

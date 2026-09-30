@@ -255,10 +255,6 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
 
   Future<void> _openParticipants(MeetingCreateState state) async {
     final l10n = AppLocalizations.of(context);
-    if (_project == null) {
-      AppToast.showError(context, title: l10n.taskCreateSelectProjectFirst);
-      return;
-    }
     final bloc = context.read<MeetingCreateBloc>();
     if (state.membersLoading) {
       await bloc.stream.firstWhere((next) => !next.membersLoading);
@@ -266,7 +262,7 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
     if (!mounted) return;
 
     if (bloc.state.members.isEmpty) {
-      bloc.add(MeetingCreateParticipantsRequested(_project!.id));
+      bloc.add(MeetingCreateParticipantsRequested(_project?.id));
       await bloc.stream.firstWhere((next) => !next.membersLoading);
     }
     if (!mounted) return;
@@ -329,10 +325,7 @@ class _MeetingCreateViewState extends State<_MeetingCreateView> {
   void _submit() {
     final l10n = AppLocalizations.of(context);
     final duration = int.tryParse(_durationCtrl.text.trim());
-    // Tahrirlashda loyiha ixtiyoriy (schema: project nullable) — moslanmagan
-    // bo'lsa null ketadi.
-    if ((_project == null && !_isEdit) ||
-        _nameCtrl.text.trim().isEmpty ||
+    if (_nameCtrl.text.trim().isEmpty ||
         _descCtrl.text.trim().isEmpty ||
         _date == null ||
         duration == null) {

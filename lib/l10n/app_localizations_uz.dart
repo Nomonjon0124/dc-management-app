@@ -1140,7 +1140,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get meetingCreateRequiredError =>
-      'Loyiha, nomi, havolasi, tavsifi, sana va davomiyligi majburiy';
+      'Nomi, tavsifi, sana va davomiyligi majburiy';
 
   @override
   String get meetingCreateSuccess => 'Yig‘ilish qo‘shildi';

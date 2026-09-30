@@ -411,7 +411,7 @@
   "meetingPreviewParticipantOne": "Ali Valiyev",
   "meetingPreviewParticipantTwo": "Madina Karimova",
   "meetingCreateCompleted": "Tugatildimi?",
-  "meetingCreateRequiredError": "Loyiha, nomi, havolasi, tavsifi, sana va davomiyligi majburiy",
+  "meetingCreateRequiredError": "Nomi, tavsifi, sana va davomiyligi majburiy",
   "meetingCreateSuccess": "Yig‘ilish qo‘shildi",
   "meetingReasonTitle": "Yig‘ilishga qatnashmadingiz",
   "meetingReasonPrompt": "Iltimos, qatnashmaganlik sababini kiriting",

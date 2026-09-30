@@ -408,7 +408,7 @@
   "meetingPreviewParticipantOne": "Ali Valiyev",
   "meetingPreviewParticipantTwo": "Madina Karimova",
   "meetingCreateCompleted": "Completed?",
-  "meetingCreateRequiredError": "Project, name, link, description, date and duration are required",
+  "meetingCreateRequiredError": "Name, description, date and duration are required",
   "meetingCreateSuccess": "Meeting created",
   "meetingReasonTitle": "You missed the meeting",
   "meetingReasonPrompt": "Please enter the reason for your absence",

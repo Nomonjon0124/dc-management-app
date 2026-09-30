@@ -5,6 +5,7 @@ import '../../../../core/error/failures.dart';
 import '../../../tasks/domain/entities/task_form_options.dart';
 import '../../../tasks/domain/usecases/get_project_members_usecase.dart';
 import '../../../tasks/domain/usecases/get_task_form_options_usecase.dart';
+import '../../../tasks/domain/usecases/get_users_usecase.dart';
 import '../../domain/entities/meeting.dart';
 import '../../domain/entities/meeting_attendance.dart';
 import '../../domain/entities/meeting_attendance_update.dart';
@@ -23,6 +24,7 @@ class MeetingCreateBloc extends Bloc<MeetingCreateEvent, MeetingCreateState> {
   MeetingCreateBloc({
     required GetTaskFormOptionsUseCase getOptions,
     required GetProjectMembersUseCase getMembers,
+    required GetUsersUseCase getUsers,
     required GetMeetingUseCase getMeeting,
     required CreateMeetingUseCase createMeeting,
     required UpdateMeetingUseCase updateMeeting,
@@ -31,6 +33,7 @@ class MeetingCreateBloc extends Bloc<MeetingCreateEvent, MeetingCreateState> {
     required UpdateMeetingAttendanceUseCase updateAttendance,
   }) : _getOptions = getOptions,
        _getMembers = getMembers,
+       _getUsers = getUsers,
        _getMeeting = getMeeting,
        _createMeeting = createMeeting,
        _updateMeeting = updateMeeting,
@@ -51,6 +54,7 @@ class MeetingCreateBloc extends Bloc<MeetingCreateEvent, MeetingCreateState> {
 
   final GetTaskFormOptionsUseCase _getOptions;
   final GetProjectMembersUseCase _getMembers;
+  final GetUsersUseCase _getUsers;
   final GetMeetingUseCase _getMeeting;
   final CreateMeetingUseCase _createMeeting;
   final UpdateMeetingUseCase _updateMeeting;
@@ -93,7 +97,32 @@ class MeetingCreateBloc extends Bloc<MeetingCreateEvent, MeetingCreateState> {
     MeetingCreateParticipantsRequested event,
     Emitter<MeetingCreateState> emit,
   ) async {
-    await _loadMembers(event.projectId, emit);
+    final projectId = event.projectId;
+    if (projectId != null) {
+      await _loadMembers(projectId, emit);
+      return;
+    }
+
+    emit(state.copyWith(membersLoading: true, members: const []));
+    try {
+      final users = await _getUsers();
+      emit(
+        state.copyWith(
+          membersLoading: false,
+          members: [
+            for (final user in users)
+              ProjectMember(
+                id: user.id,
+                username: user.username,
+                position: user.position,
+                avatar: user.avatar,
+              ),
+          ],
+        ),
+      );
+    } on Failure catch (_) {
+      emit(state.copyWith(membersLoading: false));
+    }
   }
 
   Future<void> _loadMembers(
