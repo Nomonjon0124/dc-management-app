@@ -40,6 +40,9 @@ import 'meeting_new_design/widgets/sheets/meeting_permission_dialog.dart';
 import '../widgets/meeting_live_reaction_overlay.dart';
 import '../theme/meeting_theme_colors.dart';
 
+/// Rows that share the phone stage height; further participants scroll.
+const _maxVisibleRows = 3;
+
 /// Production meeting room. The meeting WebSocket and LiveKit remain owned by
 /// [MeetingRoomBloc]; this page only renders the Figma-aligned UI for its state.
 class MeetingRoomPage extends StatelessWidget {
@@ -863,15 +866,20 @@ class _MeetingRoomViewState extends State<_MeetingRoomView> {
           final paddingVertical = compact ? 12.h : 8.h;
           final gap = compact ? 12.h : 10.h;
           final rows =
-              (gridParticipants.length + crossAxisCount - 1) / crossAxisCount;
-          final availableHeight =
-              stageConstraints.maxHeight -
-              (paddingVertical * 2) -
-              (gap * (rows.ceil() - 1));
-          final mobileTileHeight = rows > 0
-              ? availableHeight / rows
-              : stageConstraints.maxHeight;
+              (gridParticipants.length + crossAxisCount - 1) ~/ crossAxisCount;
+          // Only the first few rows share the stage height; the rest scroll
+          // so tiles keep their natural size as more people join.
+          final visibleRows = math.max(1, math.min(rows, _maxVisibleRows));
+          final fitHeight =
+              (stageConstraints.maxHeight -
+                  (paddingVertical * 2) -
+                  (gap * (visibleRows - 1))) /
+              visibleRows;
+          final mobileTileHeight = math.max(fitHeight, 160.h);
           return GridView.builder(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
             padding: EdgeInsets.symmetric(
               horizontal: paddingHorizontal,
               vertical: paddingVertical,
@@ -880,9 +888,7 @@ class _MeetingRoomViewState extends State<_MeetingRoomView> {
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: compact ? 0 : 10.w,
               mainAxisSpacing: gap,
-              mainAxisExtent: compact
-                  ? math.max(0.0, mobileTileHeight).toDouble()
-                  : null,
+              mainAxisExtent: compact ? mobileTileHeight : null,
               childAspectRatio: 1.35,
             ),
             itemCount: gridParticipants.length,
